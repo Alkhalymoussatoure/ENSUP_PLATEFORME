@@ -1,0 +1,1 @@
+ROLES_AVEC_2FA = ['gestionnaire', 'admin_systeme']
