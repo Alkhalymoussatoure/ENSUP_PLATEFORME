@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Liste des établissements</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+      display: flex;
+      gap: 2rem;
+    }
+    .etablissements {
+      flex: 1;
+    }
+    .etudiants {
+      flex: 2;
+      border-left: 1px solid #ccc;
+      padding-left: 1rem;
+    }
+    button {
+      margin-top: 0.5rem;
+      padding: 5px 10px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="etablissements">
+    <h1>Établissements</h1>
+    <% etablissements.forEach(etab => { %>
+      <div class="etablissement-card">
+        <h3><%= etab.nom %> (<%= etab.slug %>)</h3>
+        <button onclick="chargerEtudiants('<%= etab.slug %>')">Voir les étudiants</button>
+      </div>
+    <% }) %>
+  </div>
+
+  <div class="etudiants">
+    <h2>Étudiants</h2>
+    <div id="liste-etudiants">
+      <p>Sélectionnez un établissement pour voir ses étudiants.</p>
+    </div>
+  </div>
+
+  <script>
+    async function chargerEtudiants(slug) {
+      const response = await fetch(`/etablissement/${slug}/etudiants`);
+      if (!response.ok) {
+        document.getElementById('liste-etudiants').innerHTML = `<p>Erreur lors du chargement</p>`;
+        return;
+      }
+      const etudiants = await response.json();
+      const container = document.getElementById('liste-etudiants');
+
+      if (etudiants.length === 0) {
+        container.innerHTML = `<p>Aucun étudiant inscrit pour cet établissement.</p>`;
+      } else {
+        container.innerHTML = `
+          <ul>
+            ${etudiants.map(e => `<li>${e.nom} - ${e.email} - ${e.matricule}</li>`).join('')}
+          </ul>
+        `;
+      }
+    }
+  </script>
+</body>
+</html>
