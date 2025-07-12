@@ -1,5 +1,6 @@
 
 from pathlib import Path
+from corsheaders.defaults import default_headers
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -16,9 +17,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# Dans settings.py-------------------------------------------
-# AUTH_USER_MODEL = 'authentication.Utilisateur'
-# -----------------------------------------------------
 
 # Application definition
 
@@ -38,12 +36,11 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'authentification.middleware.auth_utilisateur.InjecterUtilisateurMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -130,10 +127,28 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
+    
 ]
 
-from corsheaders.defaults import default_headers
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS',
+]
+
+
 
 CORS_ALLOW_HEADERS = list(default_headers) + [
     "authorization",
 ]
+
+# pour les mail de recuperation de mots de passe
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'localhost'
+EMAIL_PORT = 1025

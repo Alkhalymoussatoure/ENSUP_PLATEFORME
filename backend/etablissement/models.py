@@ -11,6 +11,7 @@ from datetime import timedelta # pour les token expiration
 
 # related_name='nom_relier' nom personnalisé que Django utilisera pour accéder
 # à l’objet parent depuis l’objet lié.dasn foreignkey
+
     
 class Etablissement(models.Model):
     STATUT_CHOICES = [
@@ -64,6 +65,7 @@ class Utilisateur(models.Model):
     mot_de_passe = models.CharField(max_length=255)
     nom_complet = models.CharField(max_length=255)
     role = models.CharField(max_length=20, choices=ROLE_CHOICES)
+    # on doit ajouter photo de l'utilisateur ici 
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
     est_actif = models.BooleanField(default=True)
@@ -75,12 +77,18 @@ class Utilisateur(models.Model):
     )
     token = models.CharField(max_length=100, unique=True, blank=True, null=True)
     token_expires_at = models.DateTimeField(blank=True, null=True)
-    
+    # pour le token
     def generer_token(self):
         self.token = secrets.token_hex(32)  # 64 caractères
         self.token_expires_at = timezone.now() + timedelta(days=30) #valid pour 30 jours
         self.save()
-        
+
+    def est_token_valide(self):
+        if not self.token or not self.token_expires_at:
+            return False
+        return timezone.now() <= self.token_expires_at
+
+    #fintoken 
     def __str__(self):
         return self.nom_complet
     
@@ -101,12 +109,7 @@ class Utilisateur(models.Model):
             if not pbkdf2_sha256.identify(self.mot_de_passe):
                 self.set_mot_de_passe(self.mot_de_passe)
         super().save(*args, **kwargs)
-
-
-        
- 
-
-        
+    
 
 class Etudiant(models.Model):
     STATUT_CHOICES = [
@@ -235,14 +238,14 @@ class Cours(models.Model):
 
 
 class Session(models.Model):
-    SAISON_CHOICES = [
+    SAISON_CHOICES = [               #modul plutot
         ('automne', 'Automne'),
         ('hiver', 'Hiver'),
         ('ete', 'Été'),
     ]
 
     etablissement = models.ForeignKey('Etablissement', on_delete=models.CASCADE)
-    nom = models.CharField(max_length=100)
+    nom = models.CharField(max_length=100)   # metre le choix ici pour (le premier et deuxieme module) 
     saison = models.CharField(max_length=20, choices=SAISON_CHOICES)
     annee = models.IntegerField()
     date_debut = models.DateField()
@@ -280,7 +283,7 @@ class Section(models.Model):
     
     def save(self, *args, **kwargs):
         if self.nombre_inscrits > self.max_etudiants:
-            self.nombre_inscrits = self.max_etudiants  # ou lève une exception si tu préfères
+            self.nombre_inscrits = self.max_etudiants  # ou lève une exception si par préference
         super().save(*args, **kwargs)
         
     def __str__(self):

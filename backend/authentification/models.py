@@ -1,9 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from etablissement.models import Etablissement,Utilisateur
-# deuxiem forme 
+# deuxieme forme 
 import pyotp
 from django.utils import timezone
+from datetime import timedelta
 from django.core.exceptions import ValidationError
 
 
@@ -51,15 +52,16 @@ class Session2FA(models.Model):
             return totp.verify(code, valid_window=2)
         except Exception:
             return False
-
+        
+    VALIDITE_HEURES = 24 # 24 h
+    #validité
     def a_deja_valide(self, fingerprint: str) -> bool:
-        """Vérifie si l'appareil est encore reconnu (moins de 30j)"""
         if not fingerprint:
             return False
         return (
             self.appareil_confirme == fingerprint
             and self.date_derniere_validation
-            and (timezone.now() - self.date_derniere_validation).days <= 30
+            and timezone.now() - self.date_derniere_validation <= timedelta(hours=self.VALIDITE_HEURES)
         )
 
     def enregistrer_validation(self, fingerprint: str):
@@ -69,3 +71,35 @@ class Session2FA(models.Model):
 
     def __str__(self):
         return f"Session2FA: {self.utilisateur.email}"
+    
+    
+    
+    def est_valide_depuis(self, fingerprint: str) -> bool:
+        if not fingerprint:
+            return False
+        return (
+            self.appareil_confirme == fingerprint
+            and self.date_derniere_validation
+            and timezone.now() - self.date_derniere_validation <= timedelta(hours=self.VALIDITE_HEURES)
+        )
+
+    def doit_declencher_2fa(self, fingerprint: str) -> bool:
+        """
+        Détermine si une vérification 2FA est nécessaire :
+        - L'appareil est inconnu ou trop ancien (>30j)
+        - Le compte est actif et la clé TOTP est configurée
+        """
+        if not self.utilisateur.est_actif:
+            return False  # On ne déclenche rien si le compte est désactivé
+
+        # Clé absente  2FA pas encore configuré
+        if not self.cle_totp:
+            return True
+
+        # Appareil non reconnu ou plus valide  déclenche 2FA
+        if not self.est_valide_depuis(fingerprint):
+            return True
+
+        # Cas OK : 2FA déjà validé récemment sur cet appareil
+        return False
+
