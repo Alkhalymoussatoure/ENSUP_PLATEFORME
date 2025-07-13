@@ -20,7 +20,7 @@ from django.core.validators import validate_email
 
 from django.core.exceptions import ValidationError
 from .models import Utilisateur,Session2FA
-from permissions.permissions import EstConnecteEtDansEtablissement, EstLegitimePourConnexion
+from Messagerie.permissions import EstConnecteEtDansEtablissement, EstLegitimePourConnexion
 from django.http import JsonResponse
 from datetime import timedelta
 from django.core.mail import send_mail

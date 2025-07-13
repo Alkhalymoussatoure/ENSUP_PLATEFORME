@@ -30,8 +30,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'etablissement',
-    'permissions',
     'authentification',
+    'Messagerie',
     
 ]
 

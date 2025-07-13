@@ -5,7 +5,7 @@ from rest_framework import status
 
 from etablissement.models import Etablissement
 from authentification.models import Utilisateur
-from permissions.permissions import EstPersonnelEtablissement
+from Messagerie.permissions import EstPersonnelEtablissement
 from rest_framework.views import APIView
 
 # test  api moin importante 

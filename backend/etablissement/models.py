@@ -9,6 +9,7 @@ import os , secrets                       # utils pour deviner le type du fichie
 from django.utils import timezone
 from datetime import timedelta # pour les token expiration
 
+
 # related_name='nom_relier' nom personnalisé que Django utilisera pour accéder
 # à l’objet parent depuis l’objet lié.dasn foreignkey
 
@@ -589,6 +590,33 @@ class Annonce(models.Model):
     def est_expiree(self):
         return self.date_expiration and self.date_expiration < timezone.now().date()
     #signale automatique declancher 
+
+
+class Notification(models.Model):
+    TYPE_CHOICES = [
+        ('message', 'Message privé'),
+        ('annonce', 'Annonce urgente'),
+        ('forum', 'Forum'),
+    ]
+
+    utilisateur = models.ForeignKey('Utilisateur', on_delete=models.CASCADE, related_name='notifications')
+    titre = models.CharField(max_length=255)
+    texte = models.TextField()
+    date_creation = models.DateTimeField(auto_now_add=True)
+    est_lue = models.BooleanField(default=False)
+    lien_associe = models.CharField(max_length=255, blank=True)  # ex: /messages/12/
+    type_notification = models.CharField(
+        max_length=30, 
+        choices=TYPE_CHOICES, 
+        blank=True, 
+        default='message'
+    )
+
+    def __str__(self):
+        return f" {self.titre} -> {self.utilisateur.nom_complet}"
+
+    class Meta:
+        ordering = ['-date_creation']
 
 
 class Forum(models.Model):
