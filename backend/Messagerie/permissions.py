@@ -1,5 +1,5 @@
 from rest_framework.permissions import BasePermission
-from authentification.models import Etablissement
+from etablissement.models import Etablissement
 from django.db.models import Q
 
 class EstLegitimePourConnexion(BasePermission):

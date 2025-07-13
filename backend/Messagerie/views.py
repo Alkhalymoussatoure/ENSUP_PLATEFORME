@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from django.db.models import Q
 
 from Messagerie.permissions import EstConnecteEtDansEtablissement, EstPersonnelEtablissement
-from etablissement.models import  MessageForum,Message,Notification
+from etablissement.models import  MessageForum,Message,Notification, Section, Inscription, Utilisateur
 
 # Create your views here.
 
@@ -37,6 +37,57 @@ def envoyer_message(request, slug):
     message.destinataires.set(destinataires)
 
     return Response({'message': 'Message envoyé avec succès'}, status=201)
+
+
+@api_view(['POST'])
+@permission_classes([EstPersonnelEtablissement])  # Enseignant / Directeur / Admin
+def envoyer_message_groupe(request, slug):
+    expediteur = request.utilisateur
+    data = request.data
+
+    sujet = data.get('sujet')
+    contenu = data.get('contenu', '')
+    groupe_type = data.get('groupe_type')
+    groupe_id = data.get('groupe_id')
+
+    if not sujet or not groupe_type or not groupe_id:
+        return Response({'error': 'Sujet, groupe_type et groupe_id requis.'}, status=400)
+
+    #  Récupération des utilisateurs ciblés
+
+    destinataires = []
+
+    if groupe_type == 'section':
+     
+        inscriptions = Inscription.objects.filter(section_id=groupe_id)
+        destinataires = [ins.etudiant.utilisateur for ins in inscriptions]
+
+    elif groupe_type == 'departement':
+    
+        sections = Section.objects.filter(departement_id=groupe_id)
+        inscriptions = Inscription.objects.filter(section__in=sections)
+        destinataires = [ins.etudiant.utilisateur for ins in inscriptions]
+
+    else:
+        return Response({'error': 'Type de groupe invalide.'}, status=400)
+
+    if not destinataires:
+        return Response({'error': 'Aucun utilisateur trouvé pour ce groupe.'}, status=404)
+
+    #  Création du message
+    message = Message.objects.create(
+        expediteur=expediteur,
+        etablissement=expediteur.etablissement,
+        sujet=sujet,
+        contenu=contenu,
+        type_message='groupe'
+    )
+    message.destinataires.set(destinataires)
+
+    return Response({'message': f'Message envoyé à {len(destinataires)} personnes.'}, status=201)
+
+
+
 
 # liste des  Message reçu
 @api_view(['GET'])
@@ -102,54 +153,6 @@ def publier_message_forum(request, slug, forum_slug):
 
     return Response({'message': 'Message posté dans le forum'}, status=201)
 
-
-
-@api_view(['POST'])
-@permission_classes([EstPersonnelEtablissement])  # Enseignant / Directeur / Admin
-def envoyer_message_groupe(request, slug):
-    expediteur = request.utilisateur
-    data = request.data
-
-    sujet = data.get('sujet')
-    contenu = data.get('contenu', '')
-    groupe_type = data.get('groupe_type')
-    groupe_id = data.get('groupe_id')
-
-    if not sujet or not groupe_type or not groupe_id:
-        return Response({'error': 'Sujet, groupe_type et groupe_id requis.'}, status=400)
-
-    # 🎓 Récupération des utilisateurs ciblés
-    from authentification.models import Utilisateur
-    destinataires = []
-
-    if groupe_type == 'section':
-        from etablissement.models import Inscription
-        inscriptions = Inscription.objects.filter(section_id=groupe_id)
-        destinataires = [ins.etudiant.utilisateur for ins in inscriptions]
-
-    elif groupe_type == 'departement':
-        from etablissement.models import Section, Inscription
-        sections = Section.objects.filter(departement_id=groupe_id)
-        inscriptions = Inscription.objects.filter(section__in=sections)
-        destinataires = [ins.etudiant.utilisateur for ins in inscriptions]
-
-    else:
-        return Response({'error': 'Type de groupe invalide.'}, status=400)
-
-    if not destinataires:
-        return Response({'error': 'Aucun utilisateur trouvé pour ce groupe.'}, status=404)
-
-    #  Création du message
-    message = Message.objects.create(
-        expediteur=expediteur,
-        etablissement=expediteur.etablissement,
-        sujet=sujet,
-        contenu=contenu,
-        type_message='groupe'
-    )
-    message.destinataires.set(destinataires)
-
-    return Response({'message': f'Message envoyé à {len(destinataires)} personnes.'}, status=201)
 
 
 @api_view(['GET'])

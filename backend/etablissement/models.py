@@ -65,12 +65,10 @@ class Utilisateur(models.Model):
     email = models.EmailField(unique=True)
     mot_de_passe = models.CharField(max_length=255)
     nom_complet = models.CharField(max_length=255)
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES)
-    # on doit ajouter photo de l'utilisateur ici 
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES) 
     date_creation = models.DateTimeField(auto_now_add=True)
     date_modification = models.DateTimeField(auto_now=True)
     est_actif = models.BooleanField(default=True)
-    # IMPORTANT: établissement optionnel pour les superusers
     etablissement = models.ForeignKey(
         Etablissement, 
         on_delete=models.CASCADE, 
@@ -127,7 +125,7 @@ class Etudiant(models.Model):
     )
     etablissement = models.ForeignKey('Etablissement', on_delete=models.CASCADE)
     programme = models.ForeignKey('Programme', on_delete=models.SET_NULL, null=True)
-    # numero_etudiant = models.CharField(max_length=50, unique=True)
+    # on doit ajouter la photo ici 
     date_admission = models.DateField()
     courriel_etudiant = models.EmailField(blank=True, unique=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES)
@@ -160,6 +158,9 @@ class Enseignant(models.Model):
     departement = models.ForeignKey('Departement', on_delete=models.SET_NULL, null=True, related_name='enseignants')
     specialite = models.CharField(max_length=255)
     date_embauche = models.DateField()
+    # on doit ajouter une photo de l'enseignant ici 
+    # et une piece d'identité
+    # diplomes 
     qualifications = models.TextField()
     bureau = models.CharField(max_length=100)
 

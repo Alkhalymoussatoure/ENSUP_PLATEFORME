@@ -1,11 +1,10 @@
 from django.db import models
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
-from etablissement.models import Etablissement,Utilisateur
+from etablissement.models import Utilisateur
 # deuxieme forme 
 import pyotp
 from django.utils import timezone
 from datetime import timedelta
-from django.core.exceptions import ValidationError
+
 
 
 class Session2FA(models.Model):

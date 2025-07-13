@@ -34,16 +34,24 @@ export default function Verify2FA(): JSX.Element {
         body: JSON.stringify({ identifiant, fingerprint, code }),
       });
 
-      const data: { token?: string; error?: string } = await response.json();
+      const data: {
+        token?: string;
+        error?: string;
+        role?: string;
+        nom?: string;
+        email?: string;
+        matricule?: string;
+        slug_etablissement?: string;
+      } = await response.json();
 
       if (response.status === 200 && data.token) {
         localStorage.setItem('token', data.token);
-        if (slug) {
-          localStorage.setItem('slug_etablissement', slug);
-        }
-        navigate(`/${slug}/`);
-
-
+        localStorage.setItem('role', data.role || '');
+        localStorage.setItem('nom', data.nom || '');
+        localStorage.setItem('email', data.email || '');
+        localStorage.setItem('matricule', data.matricule || '');
+        localStorage.setItem('slug_etablissement', data.slug_etablissement || slug || '');
+        navigate(`/${data.slug_etablissement || slug}/`);
       } else {
         setError(data.error || 'Erreur de vérification');
       }
