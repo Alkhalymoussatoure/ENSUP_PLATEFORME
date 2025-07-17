@@ -38,7 +38,8 @@ def get_all_enseignants_by_etablissement(request, slug):
             'specialite': enseignant.specialite,
             'date_embauche': enseignant.date_embauche,
             'qualifications': enseignant.qualifications,
-            'bureau': enseignant.bureau
+            'bureau': enseignant.bureau,
+            'enseignant_telephone': enseignant.enseignant_telephone
         })
     return Response(data, status=status.HTTP_200_OK)
 
@@ -62,7 +63,8 @@ def get_enseignant_by_matricule(request, slug, matricule):
         'specialite': enseignant.specialite,
         'date_embauche': enseignant.date_embauche,
         'qualifications': enseignant.qualifications,
-        'bureau': enseignant.bureau
+        'bureau': enseignant.bureau,
+        'enseignant_telephone': enseignant.enseignant_telephone
     }
     return Response(data, status=status.HTTP_200_OK)
 
@@ -85,9 +87,10 @@ def add_enseignant_to_etablissement(request, slug):
     date_embauche = request.data.get('date_embauche')
     qualifications = request.data.get('qualifications')
     bureau = request.data.get('bureau')
+    enseignant_telephone = request.data.get('enseignant_telephone')
 
     # Vérification des champs requis
-    if not all([nom_complet, matricule, email, mot_de_passe, specialite, date_embauche, qualifications, bureau]):
+    if not all([nom_complet, matricule, email, mot_de_passe, specialite, qualifications]):
         return Response({'error': 'Tous les champs requis doivent être fournis.'}, status=status.HTTP_400_BAD_REQUEST)
 
     # Création de l'utilisateur
@@ -118,7 +121,8 @@ def add_enseignant_to_etablissement(request, slug):
         specialite=specialite,
         date_embauche=date_embauche,
         qualifications=qualifications,
-        bureau=bureau
+        bureau=bureau,
+        enseignant_telephone=enseignant_telephone
     )
     enseignant.save()
 

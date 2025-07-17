@@ -1,3 +1,4 @@
+from datetime import timezone
 from django.shortcuts import render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -97,6 +98,7 @@ def message_boite_reception(request, slug):
             'expediteur': msg.expediteur.nom_complet,
             'date_envoi': msg.date_envoi,
             'lu': msg.est_lu,
+            'date_lecture': msg.date_lecture,
             'type': msg.type_message,
             'reply_to': msg.message_parent.id if msg.message_parent else None,
             'piece_jointe': msg.fichier_joint.url if msg.fichier_joint else None
@@ -104,7 +106,30 @@ def message_boite_reception(request, slug):
         for msg in messages
     ]
 
-    return Response(resultat)
+    non_lus = messages.filter(est_lu=False).count()
+
+    return Response({
+        'messages': resultat,
+        'messages_non_lus': non_lus
+    })
+
+@api_view(['POST'])
+@permission_classes([EstConnecteEtDansEtablissement])
+def message_marquer_lu(request, slug):
+    utilisateur = request.utilisateur
+    message_id = request.data.get('id')
+
+    try:
+        msg = Message.objects.get(id=message_id, etablissement__slug=slug, destinataires=utilisateur)
+    except Message.DoesNotExist:
+        return Response({'error': 'Message introuvable ou non autorisé'}, status=status.HTTP_404_NOT_FOUND)
+
+    if not msg.est_lu:
+        msg.est_lu = True
+        msg.date_lecture = timezone.now()
+        msg.save()
+
+    return Response({'message': 'Message marqué comme lu'})
 
 
 @api_view(['GET'])

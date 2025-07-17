@@ -18,7 +18,7 @@ from rest_framework.views import APIView
 
 #creer une vue pour lister les étudiants d'un établissement
 @api_view(['GET'])
-#@permission_classes([EstPersonnelEtablissement])
+@permission_classes([EstPersonnelEtablissement])
 def get_All_etudiantsByEtablissementSlug(request, slug):
     try:
         etab = Etablissement.objects.get(slug=slug)
@@ -122,6 +122,8 @@ def update_etudiantByMatricule(request, slug, matricule):
     return Response({'message': 'Étudiant mis à jour avec succès'}, status=status.HTTP_200_OK)
 
   # Supprimer un étudiant par son matricule
+
+
 @api_view(['DELETE'])
 @permission_classes([EstPersonnelEtablissement])
 def delete_etudiantByMatricule(request, slug, matricule):
@@ -142,7 +144,7 @@ def delete_etudiantByMatricule(request, slug, matricule):
 
 # Ajouter un étudiant à un établissement
 @api_view(['POST'])
-#@permission_classes([EstPersonnelEtablissement])
+@permission_classes([EstPersonnelEtablissement])
 def add_etudiant_to_etablissement(request, slug):
     try:
         etab = Etablissement.objects.get(slug=slug)

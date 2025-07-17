@@ -155,7 +155,7 @@ class Enseignant(models.Model):
     )
     etablissement = models.ForeignKey('Etablissement', on_delete=models.CASCADE)
     courriel_employe = models.EmailField(blank=True, unique=True)
-    departement = models.ForeignKey('Departement', on_delete=models.SET_NULL, null=True, related_name='enseignants')
+    departement = models.ForeignKey('Departement', on_delete=models.SET_NULL, null=True, related_name='departement')
     specialite = models.CharField(max_length=255)
     date_embauche = models.DateField()
     # on doit ajouter une photo de l'enseignant ici 
@@ -163,9 +163,13 @@ class Enseignant(models.Model):
     # diplomes 
     qualifications = models.TextField()
     bureau = models.CharField(max_length=100)
-
+    enseignant_telephone = models.CharField(
+        max_length=20,
+        validators=[RegexValidator(regex=r'^\+?\d{9,15}$', message="Numéro invalide.")],
+    )
+    
     def __str__(self):
-        return self.utilisateur
+        return f" Enseignant: {self.utilisateur}"
 
 
 class Departement(models.Model):
@@ -181,7 +185,10 @@ class Departement(models.Model):
     )
     # related_name='departement_dirige' nom personnalisé que Django utilisera pour accéder à l’objet parent depuis l’objet lié.
     bureau = models.CharField(max_length=100)
-    telephone = models.CharField(max_length=20)
+    telephone = models.CharField(
+        max_length=20,
+        validators=[RegexValidator(regex=r'^\+?\d{9,15}$', message="Numéro invalide.")],
+    )
 
     def __str__(self):
         return self.nom
@@ -741,7 +748,7 @@ class Document(models.Model):
 
 class EvenementCalendrier(models.Model):
     TYPE_CHOICES = [
-        ('cours', 'Cours'),
+        ('cours', 'Cours'),# type personel, general
         ('examen', 'Examen'),
         ('reunion', 'Réunion'),
         ('conference', 'Conférence'),
