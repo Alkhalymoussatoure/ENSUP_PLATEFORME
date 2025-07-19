@@ -36,7 +36,6 @@ def register_utilisateur(request, slug):
     mot_de_passe = data.get('mot_de_passe')
     mot_de_passe_confirm = data.get('mot_de_passe_confirm')
     role = data.get('role')
-
     #  Vérifie que tous les champs sont présents
     if not all([matricule, nom_complet, email, mot_de_passe, mot_de_passe_confirm, role]):
         return Response({'error': "Tous les champs sont requis."}, status=400)
@@ -78,7 +77,8 @@ def register_utilisateur(request, slug):
         mot_de_passe=mot_de_passe,  # sera haché automatiquement via save()
         nom_complet=nom_complet,
         role=role,
-        etablissement=etab
+        etablissement=etab,
+        
     )
     utilisateur.set_mot_de_passe(mot_de_passe)  #  Hachage explicite
     utilisateur._mot_de_passe_deja_hache = True #si l'utilisateur ets deja hascher dis-lui de ne pas re-hasher
@@ -186,7 +186,7 @@ def generer_2fa(request, slug):
     utilisateur = getattr(request, 'utilisateur', None)
 
     if not utilisateur:
-        identifiant = request.query_params.get('identifiant')  # 👈 ou dans les headers ou body si tu préfères
+        identifiant = request.query_params.get('identifiant')  #  ou dans les headers ou body si tu préfères
         utilisateur = Utilisateur.objects.filter(
             Q(email=identifiant) | Q(matricule=identifiant),
             etablissement__slug=slug
@@ -298,6 +298,7 @@ def qui_suis_je(request, slug):
         'role': utilisateur.role,
         'nom': utilisateur.nom_complet,
         'slug_etablissement': utilisateur.etablissement.slug
+        
     })
 
 def generer_code_temporaire():
@@ -394,7 +395,7 @@ def valider_reinitialisation(request, slug, token):
     send_mail(
         "✅ Mot de passe réinitialisé",
         "Votre mot de passe a été modifié avec succès.",
-        "noreply@ton-domaine.com",
+        "noreply@kharangni_fée.com",
         [utilisateur.email]
     )
 

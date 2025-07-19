@@ -125,7 +125,12 @@ class Etudiant(models.Model):
     )
     etablissement = models.ForeignKey('Etablissement', on_delete=models.CASCADE)
     programme = models.ForeignKey('Programme', on_delete=models.SET_NULL, null=True)
-    # on doit ajouter la photo ici 
+    
+    etudiant_photo = models.ImageField(
+        upload_to='photo_etudiant/', 
+        blank=True, 
+        default='photo_etudiant/default.png'
+    )
     date_admission = models.DateField()
     courriel_etudiant = models.EmailField(blank=True, unique=True)
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES)
@@ -158,9 +163,11 @@ class Enseignant(models.Model):
     departement = models.ForeignKey('Departement', on_delete=models.SET_NULL, null=True, related_name='departement')
     specialite = models.CharField(max_length=255)
     date_embauche = models.DateField()
-    # on doit ajouter une photo de l'enseignant ici 
-    # et une piece d'identité
-    # diplomes 
+    enseignant_photo = models.ImageField(
+        upload_to='enseignant_photo/', 
+        blank=True, default='enseignant_photo/default.png'
+    )
+    enseignant_diplomes = models.FileField(upload_to='enseignant_diplomes/', blank=True)
     qualifications = models.TextField()
     bureau = models.CharField(max_length=100)
     enseignant_telephone = models.CharField(
@@ -540,7 +547,6 @@ class Message(models.Model):
     etablissement = models.ForeignKey('Etablissement', on_delete=models.CASCADE)
     expediteur = models.ForeignKey('Utilisateur', on_delete=models.CASCADE, related_name='messages_envoyes')
     destinataires = models.ManyToManyField('Utilisateur', related_name='messages_recus')
-    # groupe = models.ForeignKey('Groupe', on_delete=models.CASCADE, null=True, blank=True)
     sujet = models.CharField(max_length=255, blank=False)
     contenu = models.TextField(blank=True)
     fichier_joint = models.FileField(upload_to='messages/', blank=True)  # Corrigé le chemin
@@ -844,16 +850,31 @@ class Paiement(models.Model):
     numero_transaction = models.CharField(max_length=100)
     notes = models.TextField(blank=True)
 
-    def __str__(self):
-        return f"Paiement de {self.montant} ({self.date_paiement})"
-    
     def clean(self):
-        if self.montant > (self.frais.montant_total - self.frais.montant_paye):
-            raise ValidationError("Le montant dépasse le solde restant à payer.")
-        
+        if self.montant <= 0:
+            raise ValidationError("Le montant doit être positif.")
+
+        if not self.frais or not self.frais.montant_total:
+            raise ValidationError("Le frais associé est invalide ou incomplet.")
+
+        reste_a_payer = self.frais.montant_total - self.frais.montant_paye
+        if self.montant > reste_a_payer:
+            raise ValidationError(f"Le montant dépasse le solde à payer ({reste_a_payer:.2f}).")
+
     def save(self, *args, **kwargs):
+        is_new = self._state.adding
+        montant_initial = self.montant
+
         super().save(*args, **kwargs)
-        self.frais.montant_paye += self.montant
-        self.frais.save()
 
+        if is_new:
+            self.frais.montant_paye += montant_initial
+            self.frais.save()
 
+    def __str__(self):
+        return f"Paiement de {self.montant} le {self.date_paiement}"
+
+    class Meta:
+        verbose_name = "Paiement"
+        verbose_name_plural = "Paiements"
+        ordering = ['-date_paiement']

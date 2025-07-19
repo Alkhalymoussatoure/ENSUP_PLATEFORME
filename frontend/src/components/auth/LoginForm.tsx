@@ -76,8 +76,8 @@ export default function LoginForm(): JSX.Element {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#1e3c72] via-[#2a5298] to-[#0f4c3a] flex items-center justify-center px-4 py-10 overflow-y-auto">
-      <div className="w-full max-w-[420px] bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden animate-fadeInUp">
+    <div className="h-screen bg-gradient-to-br from-[#1e3c72] via-[#2a5298] to-[#0f4c3a] flex items-center justify-center px-4 pt-[2px] pb-[2px] overflow-hidden">
+      <div className="w-full max-w-[400px] scale-[.81] origin-center bg-white/90 backdrop-blur-md shadow-2xl rounded-3xl overflow-hidden animate-fadeInUp">
         <div className="text-center px-8 pt-8 pb-4 border-b border-green-100">
           <div className="w-20 h-20 mx-auto bg-gradient-to-r from-green-600 to-green-400 rounded-2xl flex items-center justify-center shadow-lg animate-pulse mb-6">
             <span className="text-4xl">🛡️</span>
@@ -98,9 +98,9 @@ export default function LoginForm(): JSX.Element {
                 onChange={(e) => setIdentifiant(e.target.value)}
                 placeholder="Entrez votre identifiant"
                 required
-                className="w-full px-4 py-3 pl-12 rounded-xl border-2 border-gray-200 bg-gray-50 text-base text-gray-800 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
+                className="w-full px-4 py-3 pl-12 rounded-xl border-2 border-gray-220 bg-gray-50 text-base text-gray-800 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
               />
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg opacity-60">👤</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg opacity-80">👤</span>
             </div>
           </div>
 
@@ -113,9 +113,9 @@ export default function LoginForm(): JSX.Element {
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Entrez votre mot de passe"
                 required
-                className="w-full px-4 py-3 pl-12 rounded-xl border-2 border-gray-200 bg-gray-50 text-base text-gray-800 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
+                className="w-full px-4 py-3 pl-12 rounded-xl border-2 border-gray-220 bg-gray-50 text-base text-gray-800 focus:border-green-500 focus:ring-2 focus:ring-green-100 outline-none"
               />
-              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg opacity-60">🔒</span>
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 text-lg opacity-80">🔒</span>
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}

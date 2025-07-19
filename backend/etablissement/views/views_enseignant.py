@@ -39,7 +39,10 @@ def get_all_enseignants_by_etablissement(request, slug):
             'date_embauche': enseignant.date_embauche,
             'qualifications': enseignant.qualifications,
             'bureau': enseignant.bureau,
-            'enseignant_telephone': enseignant.enseignant_telephone
+            'enseignant_telephone': enseignant.enseignant_telephone,
+            'enseignant_photo': enseignant.enseignant_photo,
+            'enseignant_diplomes': enseignant.enseignant_diplomes
+            
         })
     return Response(data, status=status.HTTP_200_OK)
 
@@ -64,7 +67,9 @@ def get_enseignant_by_matricule(request, slug, matricule):
         'date_embauche': enseignant.date_embauche,
         'qualifications': enseignant.qualifications,
         'bureau': enseignant.bureau,
-        'enseignant_telephone': enseignant.enseignant_telephone
+        'enseignant_telephone': enseignant.enseignant_telephone,
+        'enseignant_photo': enseignant.enseignant_photo,
+        'enseignant_diplomes': enseignant.enseignant_diplomes
     }
     return Response(data, status=status.HTTP_200_OK)
 
@@ -88,6 +93,8 @@ def add_enseignant_to_etablissement(request, slug):
     qualifications = request.data.get('qualifications')
     bureau = request.data.get('bureau')
     enseignant_telephone = request.data.get('enseignant_telephone')
+    enseignant_photo = request.FILES.get('enseignant_photo') 
+    enseignant_diplomes = request.FILES.get('enseignant_diplomes')
 
     # Vérification des champs requis
     if not all([nom_complet, matricule, email, mot_de_passe, specialite, qualifications]):
@@ -122,7 +129,9 @@ def add_enseignant_to_etablissement(request, slug):
         date_embauche=date_embauche,
         qualifications=qualifications,
         bureau=bureau,
-        enseignant_telephone=enseignant_telephone
+        enseignant_telephone=enseignant_telephone,
+        enseignant_photo=enseignant_photo,
+        enseignant_diplomes=enseignant_diplomes,
     )
     enseignant.save()
 
@@ -152,7 +161,8 @@ def update_enseignant_by_matricule(request, slug, matricule):
     enseignant.date_embauche = request.data.get('date_embauche', enseignant.date_embauche)
     enseignant.qualifications = request.data.get('qualifications', enseignant.qualifications)
     enseignant.bureau = request.data.get('bureau', enseignant.bureau)
-    
+    enseignant.enseignant_photo = request.FILES.get('enseignant_photo', enseignant.enseignant_photo)
+    enseignant.enseignant_diplomes = request.FILES.get('enseignant_diplomes', enseignant.enseignant_diplomes)
     # Département si fourni
     departement_id = request.data.get('departement_id')
     if departement_id:
