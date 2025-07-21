@@ -8,7 +8,7 @@ from etablissement.models import Etudiant,Enseignant,Programme,Departement
 from etablissement.models import Cours, Session, Section, Horaire
 from etablissement.models import Inscription, Facture, Travail, Remise
 from etablissement.models import Note, Presence, Message, Annonce
-from etablissement.models import Forum, MessageForum,Local, Document
+from etablissement.models import Forum, MessageForum, Document
 from etablissement.models import EvenementCalendrier,FraisScolarite,Paiement
 from Messagerie.permissions import EstPersonnelEtablissement
 from rest_framework.views import APIView

@@ -2,17 +2,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework import status
 
-from etablissement.models import Etablissement
-from authentification.models import Utilisateur
-from etablissement.models import Etudiant,Enseignant,Programme,Departement
-from etablissement.models import Cours, Session, Section, Horaire
-from etablissement.models import Inscription, Facture, Travail, Remise
-from etablissement.models import Note, Presence, Message, Annonce
-from etablissement.models import Forum, MessageForum,Local, Document
-from etablissement.models import EvenementCalendrier,FraisScolarite,Paiement
+from etablissement.models import  Annonce,Section,Utilisateur,Etablissement
 from Messagerie.permissions import EstPersonnelEtablissement
-from rest_framework.views import APIView
-
 
 
 # ===================== VUES ANNONCE =====================
@@ -35,8 +26,8 @@ def get_all_annonces_by_etablissement(request, slug):
             'date_publication': a.date_publication,
             'date_expiration': a.date_expiration,
             'est_urgent': a.est_urgent,
-            'est_generale': a.est_generale,
-            'destinataires': a.destinataires,
+            'est_generale': a.est_generale
+            
         })
     return Response(data, status=status.HTTP_200_OK)
 
@@ -54,7 +45,7 @@ def create_annonce(request, slug):
     date_expiration = request.data.get('date_expiration')
     est_urgent = request.data.get('est_urgent', False)
     est_generale = request.data.get('est_generale', False)
-    destinataires = request.data.get('destinataires', '')
+    
     if not all([auteur_id, titre, contenu]):
         return Response({'error': 'auteur_id, titre et contenu sont requis.'}, status=status.HTTP_400_BAD_REQUEST)
     try:
@@ -75,8 +66,8 @@ def create_annonce(request, slug):
         contenu=contenu,
         date_expiration=date_expiration,
         est_urgent=est_urgent,
-        est_generale=est_generale,
-        destinataires=destinataires
+        est_generale=est_generale
+       
     )
     annonce.save()
     return Response({'message': 'Annonce créée avec succès', 'id': annonce.id}, status=status.HTTP_201_CREATED)
@@ -108,7 +99,6 @@ def update_annonce_by_id(request, slug, annonce_id):
     annonce.date_expiration = request.data.get('date_expiration', annonce.date_expiration)
     annonce.est_urgent = request.data.get('est_urgent', annonce.est_urgent)
     annonce.est_generale = request.data.get('est_generale', annonce.est_generale)
-    annonce.destinataires = request.data.get('destinataires', annonce.destinataires)
     annonce.save()
     return Response({'message': 'Annonce mise à jour avec succès'}, status=status.HTTP_200_OK)
 
@@ -141,7 +131,6 @@ def get_annonce_by_id(request, slug, annonce_id):
         'date_publication': annonce.date_publication,
         'date_expiration': annonce.date_expiration,
         'est_urgent': annonce.est_urgent,
-        'est_generale': annonce.est_generale,
-        'destinataires': annonce.destinataires,
+        'est_generale': annonce.est_generale
     }
     return Response(data, status=status.HTTP_200_OK)

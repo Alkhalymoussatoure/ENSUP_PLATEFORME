@@ -3,15 +3,8 @@ from rest_framework.decorators import api_view,permission_classes
 from rest_framework import status
 
 from etablissement.models import Etablissement
-from authentification.models import Utilisateur
-from etablissement.models import Etudiant,Enseignant,Programme,Departement
-from etablissement.models import Cours, Session, Section, Horaire
-from etablissement.models import Inscription, Facture, Travail, Remise
-from etablissement.models import Note, Presence, Message, Annonce
-from etablissement.models import Forum, MessageForum,Local, Document
-from etablissement.models import EvenementCalendrier,FraisScolarite,Paiement
+from etablissement.models import Cours, Session, Section,Enseignant
 from Messagerie.permissions import EstPersonnelEtablissement
-from rest_framework.views import APIView
 
 
 
@@ -35,7 +28,6 @@ def get_all_sections_by_etablissement(request, slug):
             'numero_section': s.numero_section,
             'max_etudiants': s.max_etudiants,
             'nombre_inscrits': s.nombre_inscrits,
-            'local': s.local,
             'mode_livraison': s.mode_livraison,
             'notes_section': s.notes_section,
             'taux_remplissage': s.taux_remplissage,
@@ -59,7 +51,6 @@ def get_section_by_id(request, slug, section_id):
         'numero_section': section.numero_section,
         'max_etudiants': section.max_etudiants,
         'nombre_inscrits': section.nombre_inscrits,
-        'local': section.local,
         'mode_livraison': section.mode_livraison,
         'notes_section': section.notes_section,
         'taux_remplissage': section.taux_remplissage,
@@ -80,11 +71,10 @@ def create_section(request, slug):
     session_id = request.data.get('session_id')
     numero_section = request.data.get('numero_section')
     max_etudiants = request.data.get('max_etudiants')
-    local = request.data.get('local')
     mode_livraison = request.data.get('mode_livraison')
     notes_section = request.data.get('notes_section', '')
 
-    if not all([cours_id, enseignant_id, session_id, numero_section, max_etudiants, local, mode_livraison]):
+    if not all([cours_id, enseignant_id, session_id, numero_section, max_etudiants,mode_livraison]):
         return Response({'error': 'Tous les champs requis doivent être fournis.'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
@@ -101,7 +91,6 @@ def create_section(request, slug):
         session=session,
         numero_section=numero_section,
         max_etudiants=max_etudiants,
-        local=local,
         mode_livraison=mode_livraison,
         notes_section=notes_section
     )
@@ -119,7 +108,6 @@ def update_section_by_id(request, slug, section_id):
 
     section.numero_section = request.data.get('numero_section', section.numero_section)
     section.max_etudiants = request.data.get('max_etudiants', section.max_etudiants)
-    section.local = request.data.get('local', section.local)
     section.mode_livraison = request.data.get('mode_livraison', section.mode_livraison)
     section.notes_section = request.data.get('notes_section', section.notes_section)
 

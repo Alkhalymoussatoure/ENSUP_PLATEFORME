@@ -2,14 +2,7 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework import status
 
-from etablissement.models import Etablissement
-from authentification.models import Utilisateur
-from etablissement.models import Etudiant,Enseignant,Programme,Departement
-from etablissement.models import Cours, Session, Section, Horaire
-from etablissement.models import Inscription, Facture, Travail, Remise
-from etablissement.models import Note, Presence, Message, Annonce
-from etablissement.models import Forum, MessageForum,Local, Document
-from etablissement.models import EvenementCalendrier,FraisScolarite,Paiement
+from etablissement.models import Etablissement,Programme,Departement
 from Messagerie.permissions import EstPersonnelEtablissement
 from rest_framework.views import APIView
 
@@ -35,7 +28,6 @@ def get_all_programmes_by_etablissement(request, slug):
             'description': prog.description,
             'duree_semestres': prog.duree_semestres,
             'type': prog.type,
-            'frais_scolarite': prog.frais_scolarite,
             'conditions_admission': prog.conditions_admission,
             'est_actif': prog.est_actif,
             'departement': prog.departement.nom if prog.departement else None
@@ -58,7 +50,6 @@ def get_programme_by_code(request, slug, code):
         'description': prog.description,
         'duree_semestres': prog.duree_semestres,
         'type': prog.type,
-        'frais_scolarite': prog.frais_scolarite,
         'conditions_admission': prog.conditions_admission,
         'est_actif': prog.est_actif,
         'departement': prog.departement.nom if prog.departement else None
@@ -79,11 +70,10 @@ def create_programme(request, slug):
     description = request.data.get('description')
     duree_semestres = request.data.get('duree_semestres')
     type_programme = request.data.get('type')
-    frais_scolarite = request.data.get('frais_scolarite')
     conditions_admission = request.data.get('conditions_admission')
     departement_id = request.data.get('departement_id')
 
-    if not all([code, nom, description, duree_semestres, type_programme, frais_scolarite, conditions_admission]):
+    if not all([code, nom, description, duree_semestres, type_programme, conditions_admission]):
         return Response({'error': 'Tous les champs requis doivent être fournis.'}, status=status.HTTP_400_BAD_REQUEST)
 
     # Vérifier si le code existe déjà
@@ -107,7 +97,6 @@ def create_programme(request, slug):
         description=description,
         duree_semestres=duree_semestres,
         type=type_programme,
-        frais_scolarite=frais_scolarite,
         conditions_admission=conditions_admission
     )
     programme.save()
@@ -128,7 +117,6 @@ def update_programme_by_code(request, slug, code):
     prog.description = request.data.get('description', prog.description)
     prog.duree_semestres = request.data.get('duree_semestres', prog.duree_semestres)
     prog.type = request.data.get('type', prog.type)
-    prog.frais_scolarite = request.data.get('frais_scolarite', prog.frais_scolarite)
     prog.conditions_admission = request.data.get('conditions_admission', prog.conditions_admission)
     prog.est_actif = request.data.get('est_actif', prog.est_actif)
 

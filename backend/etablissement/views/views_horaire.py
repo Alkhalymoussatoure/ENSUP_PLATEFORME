@@ -2,17 +2,8 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view,permission_classes
 from rest_framework import status
 
-from etablissement.models import Etablissement
-from authentification.models import Utilisateur
-from etablissement.models import Etudiant,Enseignant,Programme,Departement
-from etablissement.models import Cours, Session, Section, Horaire
-from etablissement.models import Inscription, Facture, Travail, Remise
-from etablissement.models import Note, Presence, Message, Annonce
-from etablissement.models import Forum, MessageForum,Local, Document
-from etablissement.models import EvenementCalendrier,FraisScolarite,Paiement
+from etablissement.models import Etablissement, Section, Horaire,Utilisateur,Cours
 from Messagerie.permissions import EstPersonnelEtablissement
-from rest_framework.views import APIView
-
 
 
 

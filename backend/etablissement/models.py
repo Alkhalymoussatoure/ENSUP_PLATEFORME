@@ -169,7 +169,7 @@ class Enseignant(models.Model):
     )
     enseignant_diplomes = models.FileField(upload_to='enseignant_diplomes/', blank=True)
     qualifications = models.TextField()
-    bureau = models.CharField(max_length=100)
+    bureau = models.ForeignKey('Local', on_delete=models.CASCADE)
     enseignant_telephone = models.CharField(
         max_length=20,
         validators=[RegexValidator(regex=r'^\+?\d{9,15}$', message="Numéro invalide.")],
@@ -223,7 +223,6 @@ class Programme(models.Model):
     description = models.TextField()
     duree_semestres = models.IntegerField()
     type = models.CharField(max_length=30, choices=TYPE_CHOICES)
-    frais_scolarite = models.DecimalField(max_digits=10, decimal_places=2)
     conditions_admission = models.TextField()
     est_actif = models.BooleanField(default=True)
 
@@ -288,7 +287,6 @@ class Section(models.Model):
     numero_section = models.CharField(max_length=50)
     max_etudiants = models.IntegerField()
     nombre_inscrits = models.IntegerField(default=0)
-    local = models.CharField(max_length=50)
     mode_livraison = models.CharField(max_length=20, choices=MODE_CHOICES)
     notes_section = models.TextField(blank=True)
     
@@ -303,7 +301,7 @@ class Section(models.Model):
         super().save(*args, **kwargs)
         
     def __str__(self):
-        return f"Section {self.numero_section} - {self.cours.nom} ({self.mode_livraison})"
+        return f"Section {self.numero_section} - ({self.mode_livraison})"
 
     
     @property
@@ -341,12 +339,12 @@ class Horaire(models.Model):
     jour_semaine = models.CharField(max_length=20, choices=JOUR_CHOICES)
     heure_debut = models.TimeField()
     heure_fin = models.TimeField()
-    local = models.CharField(max_length=50)
+    local = models.ForeignKey('Local', on_delete=models.CASCADE)
     type_horaire = models.CharField(max_length=20, choices=TYPE_CHOICES)
     recurrence_semaines = models.PositiveIntegerField()
 
     def __str__(self):
-        return f"{self.section} - {self.cours.nom} ({self.jour_semaine} {self.heure_debut})"
+        return f"{self.section} - {self.cours.nom} ({self.jour_semaine} de {self.heure_debut} à {self.heure_fin})"
 
 
 class Inscription(models.Model):
@@ -364,7 +362,7 @@ class Inscription(models.Model):
     statut = models.CharField(max_length=20, choices=STATUT_CHOICES)
     note_finale = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
     note_lettre = models.CharField(max_length=5, blank=True)
-    frais_section = models.DecimalField(max_digits=8, decimal_places=2)
+    frais_section = models.DecimalField(max_digits=12, decimal_places=2)
     frais_payes = models.BooleanField(default=False)
 
     def __str__(self):
@@ -595,7 +593,7 @@ class Annonce(models.Model):
     date_expiration = models.DateField(null=True, blank=True)
     est_urgent = models.BooleanField(default=False)
     est_generale = models.BooleanField(default=False)
-    destinataires = models.CharField(max_length=40, blank=True)
+    
    
     def __str__(self):
         return f"[{self.date_publication.strftime('%Y-%m-%d')}] {self.titre}   {self.auteur.nom_complet}"
@@ -728,11 +726,9 @@ class Local(models.Model):
 class Document(models.Model):
     etablissement = models.ForeignKey('Etablissement', on_delete=models.CASCADE)
     section = models.ForeignKey('Section', on_delete=models.SET_NULL, null=True, blank=True)
-    telecharge_par = models.ForeignKey('Utilisateur', on_delete=models.SET_NULL, null=True)
     titre = models.CharField(max_length=255)
     fichier = models.FileField(upload_to='documents/',null=True)
     tags = models.CharField(max_length=100, blank=True, help_text="Mots-clés séparés par des virgules")
-    type_fichier = models.CharField(max_length=50)
     date_telechargement = models.DateTimeField(auto_now_add=True)
     est_public = models.BooleanField(default=False)
     description = models.TextField(blank=True)
@@ -743,7 +739,7 @@ class Document(models.Model):
 
     def save(self, *args, **kwargs):
         if self.fichier and self.etablissement:
-            self.fichier.name = f"{self.etablissement.nom}_{self.fichier.name}"
+            self.fichier.name = f"{self.etablissement.nom_etablissement}_{self.fichier.name}"
 
             if not self.type_fichier:
                 extension = os.path.splitext(self.fichier.name)[1].lower()

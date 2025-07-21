@@ -25,7 +25,6 @@ def envoyer_message_unifie(request, slug):
     fichier_joint = request.FILES.get('fichier_joint')
     parent_id = request.POST.get('message_parent')
     type_message = request.POST.get('type_message', 'prive')  # 'prive', 'groupe', 'annonce'
-
     destinataires = []
 
     #  Mode "prive"
@@ -208,9 +207,8 @@ def publier_message_forum(request, slug):
 def rechercher_utilisateur(request, slug):
     query = request.GET.get('q', '')
     if not query:
-        return Response([])
-
-    from authentification.models import Utilisateur
+        return Response([]) 
+    
     utilisateurs = Utilisateur.objects.filter(
         etablissement__slug=slug,
         est_actif=True
@@ -271,6 +269,7 @@ def supprimer_notification(request, slug, notification_id):
 
 # ===================== VUES MESSAGE =====================
 
+
 @api_view(['GET'])
 def get_all_messages_by_etablissement(request, slug):
     try:
@@ -294,6 +293,7 @@ def get_all_messages_by_etablissement(request, slug):
             'type_message': m.type_message,
         })
     return Response(data, status=status.HTTP_200_OK)
+
 
 
 @api_view(['PUT'])
