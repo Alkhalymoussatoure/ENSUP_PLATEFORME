@@ -11,7 +11,7 @@ from etablissement.models import  MessageForum,Message,Notification, Section, In
 # Create your views here.
 
 @api_view(['POST'])
-@permission_classes([EstPersonnelEtablissement])
+@permission_classes([EstConnecteEtDansEtablissement])
 def envoyer_message_unifie(request, slug):
     try:
         etablissement = Etablissement.objects.get(slug=slug)
@@ -24,7 +24,7 @@ def envoyer_message_unifie(request, slug):
     contenu = request.POST.get('contenu', '')
     fichier_joint = request.FILES.get('fichier_joint')
     parent_id = request.POST.get('message_parent')
-    type_message = request.POST.get('type_message', 'prive')  # 'prive', 'groupe', 'annonce'
+    type_message = request.POST.get('type_message')  # 'prive', 'groupe', 'annonce'
     destinataires = []
 
     #  Mode "prive"
@@ -60,6 +60,10 @@ def envoyer_message_unifie(request, slug):
     if parent_id:
         parent = Message.objects.filter(id=parent_id, etablissement=etablissement).first()
 
+    expediteur = getattr(request, 'utilisateur', None)
+
+    if expediteur is None:
+        return Response({'error': 'Utilisateur non authentifié'}, status=403)
     #  Création du message
     message = Message.objects.create(
         expediteur=expediteur,
