@@ -538,50 +538,67 @@ class Presence(models.Model):
 class Message(models.Model):
     TYPE_CHOICES = [
         ('prive', 'Privé'),
-        ('groupe', 'Groupe'),
-        ('annonce', 'Annonce'),
+        ('section', 'Section'),  # section publique
+        ('departement', 'Departement'),  # département publique
     ]
 
     etablissement = models.ForeignKey('Etablissement', on_delete=models.CASCADE)
     expediteur = models.ForeignKey('Utilisateur', on_delete=models.CASCADE, related_name='messages_envoyes')
     destinataires = models.ManyToManyField('Utilisateur', related_name='messages_recus')
-    sujet = models.CharField(max_length=255, blank=False)
+    sujet = models.CharField(max_length=255)
     contenu = models.TextField(blank=True)
-    fichier_joint = models.FileField(upload_to='messages/', blank=True)  # Corrigé le chemin
+    fichier_joint = models.FileField(upload_to='messages/', blank=True)
     date_envoi = models.DateTimeField(auto_now_add=True)
-    est_lu = models.BooleanField(default=False)
-    date_lecture = models.DateTimeField(null=True, blank=True)
     message_parent = models.ForeignKey('self', on_delete=models.SET_NULL, null=True, blank=True)
     type_message = models.CharField(max_length=20, choices=TYPE_CHOICES)
-
-    def __str__(self):
-        return self.sujet
-
-    def clean(self):
-        
-        # Note : La validation des destinataires doit être faite après la sauvegarde
-        # car c'est une relation ManyToMany
-
-        if self.date_lecture and not self.est_lu:
-            raise ValidationError("Impossible de définir une date de lecture pour un message non lu.")
-
-    def save(self, *args, **kwargs):
-        # Gérer la date de lecture
-        if self.est_lu and not self.date_lecture:
-            self.date_lecture = now()
-        
-        super().save(*args, **kwargs)
-        
-        # Validation des destinataires après sauvegarde (pour les relations ManyToMany)
-        if self.type_message in ['prive', 'annonce'] and self.destinataires.count() == 0:
-            # Vous pouvez soit lever une exception, soit logger un avertissement
-            pass  # ou print(f"Attention: Le message {self.sujet} n'a pas de destinataires")
+   
 
     class Meta:
         ordering = ['-date_envoi']
         verbose_name = 'Message'
         verbose_name_plural = 'Messages'
 
+    def __str__(self):
+        return self.sujet
+
+    def save(self, *args, **kwargs):
+        is_new = self._state.adding
+        super().save(*args, **kwargs)
+
+        if is_new:
+            for destinataire in self.destinataires.all():
+                MessageUtilisateur.objects.get_or_create(
+                    message=self,
+                    utilisateur=destinataire
+                )
+
+class MessageUtilisateur(models.Model):
+    message = models.ForeignKey('Message', on_delete=models.CASCADE)
+    utilisateur = models.ForeignKey('Utilisateur', on_delete=models.CASCADE)
+
+    est_lu = models.BooleanField(default=False)
+    est_supprime = models.BooleanField(default=False)
+    est_en_corbeille = models.BooleanField(default=False)
+    est_favori = models.BooleanField(default=False)
+    date_lecture = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('message', 'utilisateur')
+
+    def __str__(self):
+        return f"{self.utilisateur} ➜ {self.message}"
+
+    def mettre_en_corbeille(self):
+        self.est_en_corbeille = True
+        self.save()
+
+    def restaurer_de_corbeille(self):
+        self.est_en_corbeille = False
+        self.save()
+
+    def supprimer_pour_utilisateur(self):
+        self.est_supprime = True
+        self.save()
 
 class Annonce(models.Model):
     etablissement = models.ForeignKey('Etablissement', on_delete=models.CASCADE)

@@ -1,12 +1,12 @@
 from datetime import timezone
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.db.models import Q
 from rest_framework import status
 
 from Messagerie.permissions import EstConnecteEtDansEtablissement, EstPersonnelEtablissement
-from etablissement.models import  MessageForum,Message,Notification, Section, Inscription, Utilisateur,Etablissement,Forum
+from etablissement.models import  MessageUtilisateur,MessageForum,Message,Notification, Etudiant, Inscription, Utilisateur,Etablissement,Forum
 
 # Create your views here.
 
@@ -18,7 +18,10 @@ def envoyer_message_unifie(request, slug):
     except Etablissement.DoesNotExist:
         return Response({'error': 'Établissement introuvable'}, status=status.HTTP_404_NOT_FOUND)
 
-    expediteur = request.utilisateur
+    expediteur = getattr(request, 'utilisateur', None)
+    if expediteur is None:
+        return Response({'error': 'Utilisateur non authentifié'}, status=status.HTTP_403_FORBIDDEN)
+
     mode = request.POST.get('mode_envoi')  # 'prive', 'section', 'departement'
     sujet = request.POST.get('sujet')
     contenu = request.POST.get('contenu', '')
@@ -27,7 +30,7 @@ def envoyer_message_unifie(request, slug):
     type_message = request.POST.get('type_message')  # 'prive', 'groupe', 'annonce'
     destinataires = []
 
-    #  Mode "prive"
+    # 📬 Mode "prive"
     if mode == 'prive':
         matricules = request.POST.getlist('destinataires', [])
         destinataires = Utilisateur.objects.filter(
@@ -35,36 +38,38 @@ def envoyer_message_unifie(request, slug):
             etablissement=etablissement
         )
 
-    #  Mode "section"
     elif mode == 'section':
-        section_id = request.POST.get('section_id')
-        inscriptions = Inscription.objects.filter(section_id=section_id)
-        destinataires = [ins.etudiant.utilisateur for ins in inscriptions]
+        raw_ids = request.POST.get('section_id')
+        section_ids = [int(i) for i in raw_ids.split(',') if i.strip().isdigit()] if raw_ids else [
+            int(i) for i in request.POST.getlist('section_ids') if i.isdigit()
+        ]
 
-    #  Mode "departement"
+        inscriptions = Inscription.objects.filter(section__id__in=section_ids)
+        destinataires = [
+            ins.etudiant.utilisateur for ins in inscriptions
+            if ins.etudiant and ins.etudiant.utilisateur
+        ]
+
     elif mode == 'departement':
-        departement_id = request.POST.get('departement_id')
-        sections = Section.objects.filter(departement_id=departement_id)
-        inscriptions = Inscription.objects.filter(section__in=sections)
-        destinataires = [ins.etudiant.utilisateur for ins in inscriptions]
+        raw_ids = request.POST.get('departement_id')
+        departement_ids = [int(i) for i in raw_ids.split(',') if i.strip().isdigit()] if raw_ids else [
+            int(i) for i in request.POST.getlist('departement_ids') if i.isdigit()
+        ]
+
+        etudiants = Etudiant.objects.filter(programme__departement__id__in=departement_ids)
+        destinataires = [
+            et.utilisateur for et in etudiants
+            if et.utilisateur
+        ]
 
     else:
         return Response({'error': 'Mode d’envoi invalide.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    #  Validation minimale
     if not sujet or not type_message or not destinataires:
         return Response({'error': 'Sujet, type_message et destinataires requis.'}, status=status.HTTP_400_BAD_REQUEST)
 
-    #  Réponse à un message existant
-    parent = None
-    if parent_id:
-        parent = Message.objects.filter(id=parent_id, etablissement=etablissement).first()
+    parent = Message.objects.filter(id=parent_id, etablissement=etablissement).first() if parent_id else None
 
-    expediteur = getattr(request, 'utilisateur', None)
-
-    if expediteur is None:
-        return Response({'error': 'Utilisateur non authentifié'}, status=403)
-    #  Création du message
     message = Message.objects.create(
         expediteur=expediteur,
         etablissement=etablissement,
@@ -74,7 +79,16 @@ def envoyer_message_unifie(request, slug):
         type_message=type_message,
         message_parent=parent
     )
+
+    # 🔗 Liaison des destinataires
     message.destinataires.set(destinataires)
+
+    # ✅ Création manuelle des MessageUtilisateur
+    for destinataire in destinataires:
+        MessageUtilisateur.objects.get_or_create(
+            message=message,
+            utilisateur=destinataire
+        )
 
     return Response({
         'message': 'Message envoyé avec succès.',
@@ -85,36 +99,142 @@ def envoyer_message_unifie(request, slug):
         'reply_to': parent.id if parent else None,
         'piece_jointe': bool(fichier_joint)
     }, status=status.HTTP_201_CREATED)
-    
-    
+
 # liste des  Message reçu
 @api_view(['GET'])
 @permission_classes([EstConnecteEtDansEtablissement])
 def message_boite_reception(request, slug):
     utilisateur = request.utilisateur
-    messages = utilisateur.messages_recus.filter(etablissement__slug=slug).order_by('-date_envoi')
+
+    relations = MessageUtilisateur.objects.select_related('message', 'message__expediteur') \
+        .filter(
+            utilisateur=utilisateur,
+            est_supprime=False,
+            est_en_corbeille=False,
+            message__etablissement__slug=slug
+        ).order_by('-message__date_envoi')
 
     resultat = [
         {
-            'id': msg.id,
-            'sujet': msg.sujet,
-            'expediteur': msg.expediteur.nom_complet,
-            'date_envoi': msg.date_envoi,
-            'lu': msg.est_lu,
-            'date_lecture': msg.date_lecture,
-            'type': msg.type_message,
-            'reply_to': msg.message_parent.id if msg.message_parent else None,
-            'piece_jointe': msg.fichier_joint.url if msg.fichier_joint else None
+            'id': rel.message.id,
+            'sujet': rel.message.sujet,
+            'expediteur': rel.message.expediteur.nom_complet,
+            'date_envoi': rel.message.date_envoi,
+            'lu': rel.est_lu,
+            'favori': rel.est_favori,
+            'corbeille': rel.est_en_corbeille,
+            'contenu': rel.message.contenu,
+            'date_lecture': rel.date_lecture,
+            'type': rel.message.type_message,
+            'reply_to': rel.message.message_parent.id if rel.message.message_parent else None,
+            'fichier_joint': request.build_absolute_uri(rel.message.fichier_joint.url) if rel.message.fichier_joint else None
         }
-        for msg in messages
+        for rel in relations
     ]
 
-    non_lus = messages.filter(est_lu=False).count()
+    non_lus = relations.filter(est_lu=False).count()
 
     return Response({
         'messages': resultat,
         'messages_non_lus': non_lus
     })
+
+@api_view(['GET'])
+@permission_classes([EstConnecteEtDansEtablissement])
+def get_messages_in_trash(request, slug):
+    utilisateur = getattr(request, 'utilisateur', None)
+    if not utilisateur or not utilisateur.est_actif:
+        return Response({'error': 'Utilisateur non authentifié'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    relations = MessageUtilisateur.objects.filter(
+        utilisateur=utilisateur,
+        message__etablissement__slug=slug,
+        est_en_corbeille=True,
+        est_supprime=False
+    ).select_related('message', 'message__expediteur')
+
+    messages = [{
+        'id': rel.message.id,
+        'expediteur': rel.message.expediteur.nom_complet,
+        'sujet': rel.message.sujet,
+        'contenu': rel.message.contenu,
+        'date_envoi': rel.message.date_envoi.strftime('%Y-%m-%d'),
+        'heure_envoi': rel.message.date_envoi.strftime('%H:%M'),
+    } for rel in relations]
+
+    return Response({'messages': messages}, status=status.HTTP_200_OK)
+
+
+@api_view(['PUT'])
+@permission_classes([EstConnecteEtDansEtablissement])
+def restore_message_from_trash(request, slug, message_id):
+    utilisateur = getattr(request, 'utilisateur', None)
+    if not utilisateur or not utilisateur.est_actif:
+        return Response({'error': 'Utilisateur non authentifié'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        rel = MessageUtilisateur.objects.select_related('message', 'message__etablissement').get(
+            message__id=message_id,
+            message__etablissement__slug=slug,
+            utilisateur=utilisateur,
+            est_en_corbeille=True,
+            est_supprime=False
+        )
+    except MessageUtilisateur.DoesNotExist:
+        return Response({'error': 'Message introuvable ou déjà supprimé'}, status=status.HTTP_404_NOT_FOUND)
+
+    rel.restaurer_de_corbeille()
+    return Response({'message': 'Message restauré avec succès'}, status=status.HTTP_200_OK)
+
+
+@api_view(['PUT'])
+@permission_classes([EstConnecteEtDansEtablissement])
+def move_message_to_trash(request, slug, message_id):
+    utilisateur = getattr(request, 'utilisateur', None)
+    if not utilisateur or not utilisateur.est_actif:
+        return Response({'error': 'Utilisateur non authentifié'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        message = Message.objects.select_related('etablissement').get(
+            id=message_id,
+            etablissement__slug=slug
+        )
+    except Message.DoesNotExist:
+        return Response({'error': 'Message introuvable dans cet établissement'}, status=status.HTTP_404_NOT_FOUND)
+
+    rel, _ = MessageUtilisateur.objects.get_or_create(
+        message=message,
+        utilisateur=utilisateur
+    )
+
+    if rel.est_supprime:
+        return Response({'error': 'Le message est déjà supprimé pour cet utilisateur'}, status=status.HTTP_400_BAD_REQUEST)
+
+    if rel.est_en_corbeille:
+        return Response({'message': 'Message déjà dans la corbeille'}, status=status.HTTP_200_OK)
+
+    rel.mettre_en_corbeille()
+    return Response({'message': 'Message déplacé dans la corbeille'}, status=status.HTTP_200_OK)
+
+
+@api_view(['DELETE'])
+@permission_classes([EstConnecteEtDansEtablissement])
+def delete_message_for_user(request, slug, message_id):
+    utilisateur = getattr(request, 'utilisateur', None)
+    if not utilisateur or not utilisateur.est_actif:
+        return Response({'error': 'Utilisateur non authentifié'}, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        rel = MessageUtilisateur.objects.get(
+            message__id=message_id,
+            utilisateur=utilisateur,
+            message__etablissement__slug=slug
+        )
+    except MessageUtilisateur.DoesNotExist:
+        return Response({'error': 'Relation message/utilisateur introuvable'}, status=status.HTTP_404_NOT_FOUND)
+
+    rel.supprimer_pour_utilisateur()
+    return Response({'message': 'Message supprimé pour l’utilisateur'}, status=status.HTTP_200_OK)
 
 @api_view(['POST'])
 @permission_classes([EstConnecteEtDansEtablissement])
@@ -329,16 +449,6 @@ def update_message_by_id(request, slug, message_id):
     message.save()
     return Response({'message': 'Message mis à jour avec succès'}, status=status.HTTP_200_OK)
 
-@api_view(['DELETE'])
-@permission_classes([EstPersonnelEtablissement])
-def delete_message_by_id(request, slug, message_id):
-    try:
-        etab = Etablissement.objects.get(slug=slug)
-        message = Message.objects.get(id=message_id, etablissement=etab)
-        message.delete()
-        return Response({'message': 'Message supprimé avec succès'}, status=status.HTTP_204_NO_CONTENT)
-    except (Etablissement.DoesNotExist, Message.DoesNotExist):
-        return Response({'error': 'Message introuvable'}, status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET'])
@@ -453,3 +563,10 @@ def get_message_forum_by_id(request, slug, message_id):
         'nombre_vues': message.nombre_vues,
     }
     return Response(data, status=status.HTTP_200_OK)
+
+
+
+
+
+
+

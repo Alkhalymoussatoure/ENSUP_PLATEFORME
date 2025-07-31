@@ -27,7 +27,7 @@ export default function LoginForm(): JSX.Element {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      // navigate(`/${slug}/`);
+      // navigate(`/${slug}/`);  si je debloque cela l'utilisateur deja authentifier poura directementse connecter 
     }
   }, [navigate, slug]);
 

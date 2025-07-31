@@ -5,7 +5,7 @@ from .models import (
     Departement, Programme, Cours, Session, Section, Horaire,
     Inscription, Travail, Remise, Note, Presence, Message,
     Annonce, Forum, MessageForum, Local, Document, EvenementCalendrier,
-    FraisScolarite, Paiement
+    FraisScolarite, Paiement,MessageUtilisateur
 )
 
 admin.site.register(Etablissement)
@@ -24,6 +24,7 @@ admin.site.register(Remise)
 admin.site.register(Note)
 admin.site.register(Presence)
 admin.site.register(Message)
+admin.site.register(MessageUtilisateur)
 admin.site.register(Annonce)
 admin.site.register(Forum)
 admin.site.register(MessageForum)

@@ -1,63 +1,79 @@
 import React from 'react';
-import { Trash2, RotateCcw, XCircle } from 'lucide-react';
+import { Trash2, CornerUpLeft, XCircle } from 'lucide-react';
 
-interface DeletedMessage {
+interface Message {
   id: number;
-  from: string;
-  subject: string;
-  content: string;
-  date: string;
-  time: string;
+  expediteur: string;
+  sujet: string;
+  contenu: string;
+  est_lu: boolean;
+  est_favori?: boolean;
+  fichier_joint?: string | null;
+  type_message: string;
+  date_envoi: string;
+  heure_envoi: string;
 }
 
 interface SectionCorbeilleProps {
-  deletedMessages: DeletedMessage[];
+  deletedMessages: Message[];
   onRestoreMessage: (id: number) => void;
   onPermanentDelete: (id: number) => void;
+  refreshCorbeille?: () => void;
 }
 
 const SectionCorbeille: React.FC<SectionCorbeilleProps> = ({
   deletedMessages,
   onRestoreMessage,
-  onPermanentDelete
+  onPermanentDelete,
+  refreshCorbeille
 }) => {
   if (deletedMessages.length === 0) {
     return (
       <div className="p-12 text-center">
         <Trash2 className="h-16 w-16 text-gray-300 mx-auto mb-4" />
         <h3 className="text-lg font-medium text-gray-900 mb-2">Corbeille vide</h3>
-        <p className="text-gray-500">Aucun message supprimé pour l’instant.</p>
+        <p className="text-gray-500">Aucun message supprimé pour l'instant.</p>
       </div>
     );
   }
 
   return (
-    <div className="divide-y divide-gray-200">
+    <div className="space-y-4 p-4">
       {deletedMessages.map((msg) => (
-        <div key={msg.id} className="p-6 bg-white hover:bg-gray-50 transition-colors">
-          <div className="flex items-center justify-between">
+        <div key={msg.id} className="border rounded shadow-sm p-4 hover:bg-gray-50 transition">
+          <div className="flex justify-between items-center">
             <div>
-              <p className="font-semibold text-gray-900">{msg.subject}</p>
-              <p className="text-sm text-gray-600">{msg.from} – {msg.date} à {msg.time}</p>
-              <p className="mt-2 text-gray-700 line-clamp-2">{msg.content}</p>
+              <h4 className="text-lg font-semibold">{msg.sujet}</h4>
+              <p className="text-sm text-gray-600">{msg.expediteur} · {msg.date_envoi} à {msg.heure_envoi}</p>
             </div>
-            <div className="flex items-center space-x-2 ml-4">
+            <div className="flex gap-2">
+              {/* 🔄 Restaurer */}
               <button
-                onClick={() => onRestoreMessage(msg.id)}
-                className="p-2 text-green-600 hover:bg-green-100 rounded-lg"
-                title="Restaurer"
+                onClick={() => {
+                  onRestoreMessage(msg.id);
+                  if (refreshCorbeille) refreshCorbeille();
+                }}
+                className="flex items-center gap-1 text-blue-600 hover:underline"
               >
-                <RotateCcw className="h-5 w-5" />
+                <CornerUpLeft size={16} />
+                Restaurer
               </button>
+
+              {/* 🗑 Supprimer définitivement */}
               <button
-                onClick={() => onPermanentDelete(msg.id)}
-                className="p-2 text-red-600 hover:bg-red-100 rounded-lg"
-                title="Supprimer définitivement"
+                onClick={() => {
+                  onPermanentDelete(msg.id);
+                  if (refreshCorbeille) refreshCorbeille();
+                }}
+                className="flex items-center gap-1 text-red-600 hover:underline"
               >
-                <XCircle className="h-5 w-5" />
+                <XCircle size={16} />
+                Supprimer
               </button>
             </div>
           </div>
+
+          <p className="mt-2 text-gray-700">{msg.contenu}</p>
         </div>
       ))}
     </div>
@@ -65,3 +81,6 @@ const SectionCorbeille: React.FC<SectionCorbeilleProps> = ({
 };
 
 export default SectionCorbeille;
+
+
+
