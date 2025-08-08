@@ -27,9 +27,10 @@ interface Message {
 
 interface MessageListProps {
   refreshCorbeille?: () => void;
+   setUnreadCount?: (count: number) => void;
 }
 
-const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille }) => {
+const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille, setUnreadCount }) => {
   const { slug, token } = useUserContext();
   const [messages, setMessages] = useState<Message[]>([]);
   const [selectedMessageId, setSelectedMessageId] = useState<number | null>(null);
@@ -43,6 +44,7 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille }) => {
   const paginatedMessages = messages.slice(startIndex, startIndex + messagesPerPage);
   const totalPages = Math.max(1, Math.ceil(messages.length / messagesPerPage));
   const selectedMessage = messages.find((m) => m.id === selectedMessageId) || null;
+  
 
   useEffect(() => {
     if (!slug || !token) return;
@@ -56,7 +58,12 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille }) => {
     })
       .then((res) => res.json())
       .then((data) => {
-        setMessages(data.messages || []);
+        const allMessages: Message[] = data.messages || [];
+        setMessages(allMessages);
+        const nonLus = allMessages.filter((msg) => !msg.est_lu).length;
+        if (typeof setUnreadCount === 'function') {
+          setUnreadCount(nonLus);
+        }
       })
       .catch((err) => {
         setError("Impossible de charger les messages");
@@ -66,6 +73,7 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille }) => {
         setLoading(false);
       });
   }, [slug, token]);
+
 
   const handleReply = () => {
     console.log("Répondre au message");
@@ -243,7 +251,6 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille }) => {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    console.log("🔔 Tentative de déplacement dans la corbeille pour :", msg.id);
 
                     handleTrash(msg.id);
 

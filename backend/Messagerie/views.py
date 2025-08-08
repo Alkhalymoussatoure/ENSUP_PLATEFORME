@@ -330,15 +330,15 @@ def publier_message_forum(request, slug):
 @api_view(['GET'])
 def rechercher_utilisateur(request, slug):
     query = request.GET.get('q', '')
-    if not query:
-        return Response([]) 
+    if not query.strip():
+        return Response([])
     
     utilisateurs = Utilisateur.objects.filter(
         etablissement__slug=slug,
         est_actif=True
     ).filter(
         Q(nom_complet__icontains=query) | Q(matricule__icontains=query)
-    )[:10]
+    ).order_by('nom_complet')[:10]
 
     resultat = [{'nom': u.nom_complet, 'matricule': u.matricule, 'role': u.role} for u in utilisateurs]
     return Response(resultat)

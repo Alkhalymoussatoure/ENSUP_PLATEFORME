@@ -13,6 +13,8 @@ const NousPage: React.FC = () => {
   const [activeSection, setActiveSection] = useState('reception');
   const [isComposing, setIsComposing] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<number | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+  
 
   const [messages, setMessages] = useState([]);
   const [drafts, setDrafts] = useState([]);
@@ -148,6 +150,7 @@ const NousPage: React.FC = () => {
               startIndex={startIndex}
               onPageChange={handlePageChange}
               getCategoryColor={getCategoryColor}
+              setUnreadCount={setUnreadCount}
             />
             {selectedMessage && (
               <MessageViewer
@@ -172,7 +175,8 @@ const NousPage: React.FC = () => {
               setActiveSection={handleChangeSection}
               isComposing={isComposing}
               handleCompose={handleCompose}
-              unreadCount={messages.filter((m: any) => !m.read).length}
+              // unreadCount={messages.filter((m: any) => !m.read).length}
+              unreadCount={unreadCount}
               draftCount={drafts.length}
               trashCount={deletedMessages.length}
             />

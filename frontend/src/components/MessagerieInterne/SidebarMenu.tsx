@@ -54,7 +54,9 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
               Réception
             </span>
           </div>
-          <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">{unreadCount}</span>
+           {unreadCount > 0 && (
+            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">{unreadCount}</span>
+          )}
         </button>
 
         <button

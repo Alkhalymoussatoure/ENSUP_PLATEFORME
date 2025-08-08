@@ -1,20 +1,18 @@
 import React from 'react';
 import { Send } from 'lucide-react';
+import { useMessagesEnvoyes } from '../../hooks/useMessagesEnvoyes';
 
-interface SentMessage {
-  id: number;
-  to: string;
-  subject: string;
-  content: string;
-  date: string;
-  time: string;
-}
+const SectionEnvoyes: React.FC = () => {
+  const { sentMessages, loading, error } = useMessagesEnvoyes();
 
-interface SectionEnvoyesProps {
-  sentMessages: SentMessage[];
-}
+  if (loading) {
+    return <div className="p-6 text-gray-500">Chargement des messages envoyés…</div>;
+  }
 
-const SectionEnvoyes: React.FC<SectionEnvoyesProps> = ({ sentMessages }) => {
+  if (error) {
+    return <div className="p-6 text-red-600">{error}</div>;
+  }
+
   if (sentMessages.length === 0) {
     return (
       <div className="p-12 text-center">
@@ -28,16 +26,14 @@ const SectionEnvoyes: React.FC<SectionEnvoyesProps> = ({ sentMessages }) => {
   return (
     <div className="divide-y divide-gray-200">
       {sentMessages.map((msg) => (
-        <div key={msg.id} className="p-6 bg-white hover:bg-gray-50 transition-colors">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="font-semibold text-gray-900">{msg.subject}</p>
-              <p className="text-sm text-gray-600">
-                À : {msg.to} - {msg.date} à {msg.time}
-              </p>
-              <p className="mt-2 text-gray-700 line-clamp-2">{msg.content}</p>
-            </div>
-          </div>
+        <div key={msg.id} className="p-6 bg-white hover:bg-gray-50 transition">
+          <p className="font-semibold text-gray-900">{msg.sujet}</p>
+          <p className="text-sm text-gray-600">
+            À : {msg.destinataires.join(', ')} · {msg.date_envoi}
+          </p>
+          {msg.piece_jointe && (
+            <p className="mt-1 text-sm text-blue-600">📎 Pièce jointe : {msg.piece_jointe}</p>
+          )}
         </div>
       ))}
     </div>

@@ -68,6 +68,8 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
   const [localSubject, setLocalSubject] = useState(subject);
   const [localRecipients, setLocalRecipients] = useState(recipients);
   const [isLoading, setIsLoading] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
   const insertTextAtCursor = (text: string) => {
     const textarea = document.getElementById('message-textarea') as HTMLTextAreaElement;
     if (!textarea) return;
@@ -128,7 +130,7 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
     setShowDestinataireModal(false);
   };
 
-  // ✅ VERSION CORRIGÉE - Plus d'erreur de stream déjà lu
+
   const handleSendMessage = async (e: React.FormEvent) => {
   e.preventDefault();
   setIsLoading(true);
@@ -206,15 +208,32 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
     } catch {
       console.warn('Réponse non JSON.');
     }
-    finally {
-      setIsLoading(false);
-    }
-    alert(' Message envoyé avec succès');
+    // finally {
+    //   setIsLoading(false);
+    // }
+    // alert(' Message envoyé avec succès');
     onSend();
+    setIsSuccess(true);
+    setLocalSubject('');
+    setLocalRecipients('');
+    onUpdateMessage('');
+    setFile(null);
+
+    setDepartementId('');
+    setSectionId('');
+    setMessageType('prive');
+
+    setTimeout(() => {
+      setIsSuccess(false);
+    }, 3000);
   } catch (err) {
+    // Gestion de l’erreur
     const msg = err instanceof Error ? err.message : "Échec de l'envoi du message.";
     console.error('Erreur envoi :', err);
     alert(msg);
+  } finally {
+    // 🔄 Ce bloc s'exécute dans tous les cas
+    setIsLoading(false);
   }
 
 };
@@ -444,20 +463,29 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
           Sauvegarder
         </button>
         <div className="flex items-center space-x-3">
-          <button
+         <button
             type="submit"
-            disabled={isLoading}
-            className="px-8 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition font-medium text-lg"
+            disabled={isLoading || isSuccess}
+            className={`px-8 py-3 rounded-lg font-medium text-lg transition ${
+              isSuccess
+                ? 'bg-green-700 text-white cursor-default'
+                : 'bg-green-500 text-white hover:bg-green-600'
+            }`}
           >
-             {isLoading ? (
+            {isLoading ? (
               <div className="flex items-center justify-center">
                 <div className="w-5 h-5 mr-2 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
                 Envoi en cours...
+              </div>
+            ) : isSuccess ? (
+              <div className="flex items-center justify-center gap-2">
+                Message envoyé
               </div>
             ) : (
               'Envoyer'
             )}
           </button>
+
           <button
             type="button"
             onClick={onCancel}
