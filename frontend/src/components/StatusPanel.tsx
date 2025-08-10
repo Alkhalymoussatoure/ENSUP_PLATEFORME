@@ -1,5 +1,7 @@
 import React from 'react';
 import { CreditCard, MessageSquare, FileText, TrendingUp } from 'lucide-react';
+import { useMessagesNonLus } from '../hooks/useMessagesNonLus'; 
+
 
 interface StatusPanelProps {
   onNavigateToMessages?: () => void;
@@ -7,6 +9,7 @@ interface StatusPanelProps {
 }
 
 const StatusPanel: React.FC<StatusPanelProps> = ({ onNavigateToMessages, onServiceClick }) => {
+  const { nombreNonLus, loading } = useMessagesNonLus();
   return (
     <div className="bg-white rounded-xl shadow-sm p-6 mb-6 border border-gray-100">
       <div className="flex items-center space-x-3 mb-6">
@@ -44,11 +47,13 @@ const StatusPanel: React.FC<StatusPanelProps> = ({ onNavigateToMessages, onServi
           onClick={onNavigateToMessages}
           className="w-full rounded-lg p-4 bg-emerald-50 border-l-4 border-emerald-500 hover:bg-emerald-100 transition-colors duration-200"
         >
-          <div className="flex items-center justify-between">
+           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
               <div className="p-2 bg-emerald-500 rounded-lg text-white relative">
                 <MessageSquare className="h-5 w-5" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                {nombreNonLus > 0 && (
+                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
+                )}
               </div>
               <div>
                 <span className="font-medium text-gray-800">Messages</span>
@@ -56,7 +61,9 @@ const StatusPanel: React.FC<StatusPanelProps> = ({ onNavigateToMessages, onServi
               </div>
             </div>
             <div className="text-right">
-              <span className="text-xl font-bold text-emerald-600">6</span>
+              <span className="text-xl font-bold text-emerald-600">
+                {loading ? '...' : nombreNonLus}
+              </span>
               <div className="text-sm text-gray-600">nouveaux</div>
             </div>
           </div>

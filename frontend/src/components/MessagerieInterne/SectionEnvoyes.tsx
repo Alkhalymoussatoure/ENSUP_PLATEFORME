@@ -1,5 +1,5 @@
 import React from 'react';
-import { Send } from 'lucide-react';
+import { Send,Paperclip } from 'lucide-react';
 import { useMessagesEnvoyes } from '../../hooks/useMessagesEnvoyes';
 
 const SectionEnvoyes: React.FC = () => {
@@ -32,8 +32,12 @@ const SectionEnvoyes: React.FC = () => {
             À : {msg.destinataires.join(', ')} · {msg.date_envoi}
           </p>
           {msg.piece_jointe && (
-            <p className="mt-1 text-sm text-blue-600">📎 Pièce jointe : {msg.piece_jointe}</p>
+            <p className="mt-1 text-sm text-blue-600 flex items-center gap-1">
+              <Paperclip size={14} className="text-blue-600" />
+              Pièce jointe : {msg.piece_jointe}
+            </p>
           )}
+
         </div>
       ))}
     </div>

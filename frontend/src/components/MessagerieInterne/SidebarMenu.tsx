@@ -7,13 +7,13 @@ import {
   Trash2,
   Tag
 } from 'lucide-react';
+import { useMessagesNonLus } from '../../hooks/useMessagesNonLus'; // adapte le chemin si besoin
 
 interface SidebarMenuProps {
   activeSection: string;
   setActiveSection: (section: string) => void;
   isComposing: boolean;
   handleCompose: () => void;
-  unreadCount: number;
   draftCount: number;
   trashCount: number;
 }
@@ -23,15 +23,17 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
   setActiveSection,
   isComposing,
   handleCompose,
-  unreadCount,
   draftCount,
   trashCount
 }) => {
+  const { nombreNonLus, loading } = useMessagesNonLus();
+
   return (
     <div className="bg-white rounded-xl shadow-sm p-6">
       <h3 className="text-lg font-semibold text-gray-800 mb-6">Messagerie</h3>
 
       <div className="space-y-2">
+        {/* Bouton Composer */}
         <button
           onClick={handleCompose}
           className={`w-full flex items-center space-x-3 p-3 text-left rounded-lg transition-colors duration-200 ${
@@ -42,6 +44,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
           <span className={`font-medium ${isComposing ? 'font-bold' : ''}`}>Composer</span>
         </button>
 
+        {/* Réception */}
         <button
           onClick={() => setActiveSection('reception')}
           className={`w-full flex items-center justify-between p-3 text-left rounded-lg transition-colors duration-200 ${
@@ -54,11 +57,12 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
               Réception
             </span>
           </div>
-           {unreadCount > 0 && (
-            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">{unreadCount}</span>
+          {!loading && nombreNonLus > 0 && (
+            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">{nombreNonLus}</span>
           )}
         </button>
 
+        {/* Envoyés */}
         <button
           onClick={() => setActiveSection('envoyes')}
           className={`w-full flex items-center space-x-3 p-3 text-left rounded-lg transition-colors duration-200 ${
@@ -71,6 +75,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
           </span>
         </button>
 
+        {/* Brouillons */}
         <button
           onClick={() => setActiveSection('brouillons')}
           className={`w-full flex items-center justify-between p-3 text-left rounded-lg transition-colors duration-200 ${
@@ -83,9 +88,12 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
               Brouillons
             </span>
           </div>
-          <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">{draftCount}</span>
+          {draftCount > 0 && (
+            <span className="bg-blue-500 text-white text-xs px-2 py-1 rounded-full">{draftCount}</span>
+          )}
         </button>
 
+        {/* Corbeille */}
         <button
           onClick={() => setActiveSection('corbeille')}
           className={`w-full flex items-center justify-between p-3 text-left rounded-lg transition-colors duration-200 ${
@@ -98,9 +106,12 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({
               Corbeille
             </span>
           </div>
-          <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">{trashCount}</span>
+          {trashCount > 0 && (
+            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">{trashCount}</span>
+          )}
         </button>
 
+        {/* Catégories */}
         <button
           onClick={() => setActiveSection('categories')}
           className={`w-full flex items-center space-x-3 p-3 text-left rounded-lg transition-colors duration-200 ${

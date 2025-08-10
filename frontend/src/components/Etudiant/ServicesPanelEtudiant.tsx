@@ -51,7 +51,7 @@ const ServicesPanelEtudiant: React.FC<ServicesPanelProps> = ({ onServiceClick })
         </button>
         
         <div className={`transition-all duration-300 ease-in-out ${
-          expandedSections.includes('services') ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          expandedSections.includes('services') ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
         } overflow-hidden`}>
           <div className="p-4 space-y-2">
             {services.map((service, index) => (

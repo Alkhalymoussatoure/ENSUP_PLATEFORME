@@ -17,11 +17,11 @@ const ServicesPanelDirecteur: React.FC<ServicesPanelProps> = ({ onServiceClick }
   };
 
   const services = [
-    { icon: Users, name: 'Annuaire des enseignants', color: 'bg-blue-500', key: 'annuaire-enseignants' },
-    { icon: CreditCard, name: 'Forfait étudiant', color: 'bg-green-500', key: 'forfait-etudiant' },
-    { icon: FileText, name: 'Dossier personnel', color: 'bg-purple-500', key: 'dossier-personnel' },
-    { icon: Calendar, name: 'Fréquentation scolaire', color: 'bg-orange-500', key: 'frequentation-scolaire' },
-    { icon: BarChart, name: 'Grille de cheminement', color: 'bg-red-500', key: 'grille-cheminement' },
+    { icon: Users, name: 'Statistique académique', color: 'bg-blue-500', key: 'Statistique-academique' },
+    { icon: CreditCard, name: 'Présence globale', color: 'bg-green-500', key: 'Presence-globale' },
+    { icon: FileText, name: 'Gestion de section et programmes', color: 'bg-purple-500', key: 'Gestion-de-section-et-programmes' },
+    { icon: Calendar, name: 'Messagerie interne', color: 'bg-orange-500', key: 'Messagerie-interne' },
+    { icon: BarChart, name: 'Planing institutionnel', color: 'bg-red-500', key: 'Planing institutionnel' },
     { icon: Clock, name: 'Horaire de cours', color: 'bg-indigo-500', key: 'horaire-cours' },
     { icon: Award, name: 'Résultats - Bulletin d\'études', color: 'bg-yellow-500', key: 'resultats-bulletin' },
     { icon: Building, name: 'Stages', color: 'bg-teal-500', key: 'stages' }
@@ -91,7 +91,7 @@ const ServicesPanelDirecteur: React.FC<ServicesPanelProps> = ({ onServiceClick }
         </button>
         
         <div className={`transition-all duration-300 ease-in-out ${
-          expandedSections.includes('resources') ? 'max-h-48 opacity-100' : 'max-h-0 opacity-0'
+          expandedSections.includes('services') ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
         } overflow-hidden`}>
           <div className="p-4 space-y-2">
             {resources.map((resource, index) => (

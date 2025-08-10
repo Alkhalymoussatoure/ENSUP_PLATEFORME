@@ -243,14 +243,20 @@ def message_marquer_lu(request, slug):
     message_id = request.data.get('id')
 
     try:
-        msg = Message.objects.get(id=message_id, etablissement__slug=slug, destinataires=utilisateur)
+        # Vérifie que le message existe et appartient à l'établissement
+        message = Message.objects.get(id=message_id, etablissement__slug=slug)
     except Message.DoesNotExist:
         return Response({'error': 'Message introuvable ou non autorisé'}, status=status.HTTP_404_NOT_FOUND)
 
-    if not msg.est_lu:
-        msg.est_lu = True
-        msg.date_lecture = timezone.now()
-        msg.save()
+    try:
+        # Récupère l'objet MessageUtilisateur correspondant
+        msg_utilisateur = MessageUtilisateur.objects.get(message=message, utilisateur=utilisateur)
+    except MessageUtilisateur.DoesNotExist:
+        return Response({'error': 'Relation message/utilisateur introuvable'}, status=status.HTTP_404_NOT_FOUND)
+
+    # Marque comme lu si ce n'est pas déjà le cas
+    if not msg_utilisateur.est_lu:
+        msg_utilisateur.marquer_comme_lu()
 
     return Response({'message': 'Message marqué comme lu'})
 

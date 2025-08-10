@@ -1,7 +1,18 @@
 import React from 'react';
 import { Trash2, CornerUpLeft, XCircle } from 'lucide-react';
 import { useUserContext } from '../../hooks/useUserContext';
-import { useCorbeilleMessages } from '../../hooks/useCorbeilleMessages';
+import { useCorbeilleMessages } from '../../hooks/useCorbeilleMessages'; 
+
+import * as Sentry from '@sentry/react';
+import { browserTracingIntegration } from '@sentry/react';
+
+Sentry.init({
+  dsn: 'https://<your-key>@o<org-id>.ingest.sentry.io/<project-id>',
+  integrations: [browserTracingIntegration()],
+  tracesSampleRate: 1.0, // Ajuste selon tes besoins
+});
+
+
 
 const SectionCorbeille: React.FC = () => {
   const { slug, token }: { slug: string; token: string | null } = useUserContext();
@@ -15,7 +26,7 @@ const SectionCorbeille: React.FC = () => {
     );
   }
 
-  // ✅ Appel sécurisé du hook
+  
   // eslint-disable-next-line react-hooks/rules-of-hooks
   const { deletedMessages, loading, error, refresh } = useCorbeilleMessages(slug, token);
 
@@ -41,24 +52,26 @@ const SectionCorbeille: React.FC = () => {
   };
 
   // 🗑 Suppression définitive
-  const handleDeleteForever = async (id: number) => {
-    try {
-      const res = await fetch(`http://localhost:8000/api/${slug}/messages/inbox/${id}/delete-user/`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+ const handleDeleteForever = async (id: number) => {
+  try {
+    const res = await fetch(`http://localhost:8000/api/${slug}/messages/inbox/${id}/delete-user/`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
 
-      if (res.ok) {
-        refresh();
-      } else {
-        console.warn('Erreur suppression :', await res.text());
-      }
-    } catch (err) {
-      console.error('Erreur suppression définitive :', err);
+    if (res.ok) {
+      refresh();
+    } else {
+      const errorText = await res.text();
+      Sentry.captureMessage(`Échec suppression message ID ${id}: ${errorText}`, 'warning');
     }
-  };
+  } catch (err) {
+    Sentry.captureException(err);
+  }
+};
+
 
   // ⏳ Chargement ou erreur
   if (loading) {
@@ -105,15 +118,23 @@ const SectionCorbeille: React.FC = () => {
                 Restaurer
               </button>
               <button
-                onClick={() => handleDeleteForever(msg.id)}
-                className="flex items-center gap-1 text-red-600 hover:underline"
-              >
-                <XCircle size={16} />
-                Supprimer
+                  aria-label="Supprimer définitivement le message"
+                  onClick={() => {
+                    const confirmDelete = window.confirm("Supprimer définitivement ce message ?");
+                    if (confirmDelete) handleDeleteForever(msg.id);
+                  }}
+                  className="flex items-center gap-1 text-red-600 hover:underline"
+                >
+                  <XCircle size={16} />
+                  Supprimer
               </button>
+
             </div>
-          </div>
-          <p className="mt-2 text-gray-700">{msg.contenu}</p>
+          </div> 
+          {/* permet de limiter la visibilité des messages dans notre corbeille  */}
+          <p className="mt-2 text-gray-700">
+            {msg.contenu.length > 200 ? msg.contenu.slice(0, 40) + '...' : msg.contenu}
+          </p>
         </div>
       ))}
     </div>

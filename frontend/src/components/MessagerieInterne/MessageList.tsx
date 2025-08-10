@@ -58,8 +58,33 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille, setUnreadCo
     })
       .then((res) => res.json())
       .then((data) => {
-        const allMessages: Message[] = data.messages || [];
+        const allMessages: Message[] = (data.messages || []).map((msg: {
+          id: number;
+          expediteur: string;
+          sujet: string;
+          contenu: string;
+          lu: boolean;
+          favori?: boolean;
+          fichier_joint?: string | null;
+          type: string;
+          date_envoi: string;
+          heure_envoi: string;
+        }) => ({
+          id: msg.id,
+          expediteur: msg.expediteur,
+          sujet: msg.sujet,
+          contenu: msg.contenu,
+          est_lu: msg.lu,
+          est_favori: msg.favori ?? false,
+          fichier_joint: msg.fichier_joint ?? null,
+          type_message: msg.type,
+          date_envoi: msg.date_envoi,
+          heure_envoi: msg.heure_envoi
+        }));
+
+
         setMessages(allMessages);
+
         const nonLus = allMessages.filter((msg) => !msg.est_lu).length;
         if (typeof setUnreadCount === 'function') {
           setUnreadCount(nonLus);
@@ -92,10 +117,16 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille, setUnreadCo
       });
 
       if (!response.ok) {
-        const errorText = await response.text();
-        console.warn("Échec côté serveur :", errorText);
+        if (response.status === 403) {
+          alert("Accès refusé. Vous n'avez pas les droits nécessaires.");
+        } else if (response.status === 404) {
+          alert("Message introuvable ou déjà supprimé.");
+        } else {
+          alert("Erreur serveur. Veuillez réessayer plus tard.");
+        }
         return;
       }
+
 
       setMessages((prev) => prev.filter((m) => m.id !== id));
 
@@ -134,6 +165,48 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille, setUnreadCo
       console.error("Erreur suppression définitive :", err);
     }
   };
+// message marquer comme lu 
+  const marquerMessageCommeLu = async (id: number) => {
+    try {
+      const res = await fetch(`http://localhost:8000/api/${slug}/messages/marquer_lu/`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ id }),
+      });
+
+      if (res.ok) {
+        setMessages((prev) => {
+          const updated = prev.map((msg) =>
+            msg.id === id ? { ...msg, est_lu: true } : msg
+          );
+
+          if (typeof setUnreadCount === 'function') {
+            const nonLus = updated.filter((msg) => !msg.est_lu).length;
+            setUnreadCount(nonLus);
+          }
+
+          return updated;
+        });
+      } else {
+        console.warn("Échec du marquage comme lu");
+      }
+    } catch (err) {
+      console.error("Erreur réseau lors du marquage comme lu :", err);
+    }
+  };
+
+
+  const handleSelectMessage = async (id: number, estLu: boolean) => {
+    if (!estLu) {
+      await marquerMessageCommeLu(id);
+    }
+    setSelectedMessageId(id);
+  };
+
+// fin message marquer comme lu 
 
   const getCategoryColor = (category: string) => {
     switch (category) {
@@ -185,7 +258,7 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille, setUnreadCo
         return (
           <div
             key={msg.id}
-            onClick={() => setSelectedMessageId(msg.id)}
+            onClick={() => handleSelectMessage(msg.id, msg.est_lu)}
             className={`p-6 cursor-pointer hover:bg-gray-50 transition-colors relative ${
               selectedMessageId === msg.id ? 'bg-blue-50' : ''
             } ${!msg.est_lu ? 'bg-blue-100/50' : ''}`}

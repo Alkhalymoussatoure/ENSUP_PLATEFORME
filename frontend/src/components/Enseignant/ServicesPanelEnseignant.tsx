@@ -17,14 +17,14 @@ const ServicesPanelEnseignant: React.FC<ServicesPanelProps> = ({ onServiceClick 
   };
 
   const services = [
-    { icon: Users, name: 'Annuaire des enseignants', color: 'bg-blue-500', key: 'annuaire-enseignants' },
-    { icon: CreditCard, name: 'Forfait étudiant', color: 'bg-green-500', key: 'forfait-etudiant' },
+    { icon: Users, name: 'Liste des cours enseignés', color: 'bg-blue-500', key: 'Liste-des-cours-enseignes' },
+    { icon: CreditCard, name: 'Document des cours', color: 'bg-green-500', key: 'Document-des-cours' },
     { icon: FileText, name: 'Dossier personnel', color: 'bg-purple-500', key: 'dossier-personnel' },
-    { icon: Calendar, name: 'Fréquentation scolaire', color: 'bg-orange-500', key: 'frequentation-scolaire' },
-    { icon: BarChart, name: 'Grille de cheminement', color: 'bg-red-500', key: 'grille-cheminement' },
-    { icon: Clock, name: 'Horaire de cours', color: 'bg-indigo-500', key: 'horaire-cours' },
-    { icon: Award, name: 'Résultats - Bulletin d\'études', color: 'bg-yellow-500', key: 'resultats-bulletin' },
-    { icon: Building, name: 'Stages', color: 'bg-teal-500', key: 'stages' }
+    { icon: Calendar, name: 'Traveaux des assignés', color: 'bg-orange-500', key: 'Traveaux-des-assigne' },
+    { icon: BarChart, name: 'Evaluation des étudiants', color: 'bg-red-500', key: 'Evaluation-des-etudiants' },
+    { icon: Clock, name: 'Presence / gestion d\'assiduité', color: 'bg-indigo-500', key: 'Presence-gestion-assiduite' },
+    { icon: Award, name: 'Communication / Annonces', color: 'bg-yellow-500', key: 'Communication-Annonces' },
+    { icon: Building, name: 'Calendrier enseignant', color: 'bg-teal-500', key: 'Calendrier-enseignant' }
   ];
 
   const resources = [
@@ -51,8 +51,10 @@ const ServicesPanelEnseignant: React.FC<ServicesPanelProps> = ({ onServiceClick 
         </button>
         
         <div className={`transition-all duration-300 ease-in-out ${
-          expandedSections.includes('services') ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+          expandedSections.includes('services') ? 'max-h-[1000px] opacity-100' : 'max-h-0 opacity-0'
         } overflow-hidden`}>
+
+
           <div className="p-4 space-y-2">
             {services.map((service, index) => (
               <button

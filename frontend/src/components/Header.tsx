@@ -3,6 +3,7 @@ import { MessageCircle, LogOut, User, GraduationCap, Bell } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 // recuperation des donnees suivant les roles 
 import { useUserContext } from '../hooks/useUserContext';
+import { useMessagesNonLus } from '../hooks/useMessagesNonLus'; 
 // fin appelle
 
 interface HeaderProps {
@@ -14,6 +15,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome }) => {
   const navigate = useNavigate();
   const { slug } = useParams<{ slug: string }>();
   const { nom, role } = useUserContext(); // ici recuperation de nom et role utilisateur 
+  const { nombreNonLus, loading, refresh } = useMessagesNonLus();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -23,6 +25,14 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   
+  const handleNavigateHome = () => {
+  if (onNavigateHome) {
+      onNavigateHome(); // navigation personnalisée
+    }
+    refresh(); // recharge les notifications/messages
+  };
+
+
 // fonction pour la deconnexion
   const handleLogout = async () => {
     const token = localStorage.getItem('token');
@@ -50,7 +60,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome }) => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           <button 
-            onClick={onNavigateHome}
+            onClick={handleNavigateHome}
             className="flex items-center space-x-4 group cursor-pointer"
           >
             <div className="relative">
@@ -95,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({ onNavigateHome }) => {
               <button className="relative p-3 text-gray-600 hover:text-emerald-700 bg-white hover:bg-emerald-50 rounded-xl transition-all duration-200 group shadow-sm">
                 <MessageCircle className="h-5 w-5" />
                 <span className="absolute -top-1 -right-1 bg-emerald-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-medium shadow-sm">
-                  3
+                  {loading ? '...' : nombreNonLus}
                 </span>
               </button>
 

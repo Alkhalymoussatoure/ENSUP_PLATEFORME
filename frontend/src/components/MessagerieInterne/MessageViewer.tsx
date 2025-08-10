@@ -1,5 +1,5 @@
 import React from 'react';
-import { Reply, Trash2, ArrowLeft } from 'lucide-react';
+import { Reply, Trash2, ArrowLeft, Download, Paperclip  } from 'lucide-react';
 
 interface Message {
   id: number;
@@ -76,18 +76,21 @@ const MessageViewer: React.FC<MessageViewerProps> = ({
       {message.fichier_joint && (
         <div className="mt-6">
           <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">📎 Fichier joint disponible</p>
-              <p className="text-xs text-gray-400 truncate max-w-xs">{message.fichier_joint}</p>
+            <div className="flex items-center space-x-2">
+              <Paperclip  className="w-4 h-4 text-gray-600 text-sm" />
+              <p className="text-sm text-gray-600">Fichier joint disponible</p>
             </div>
+            <p className="text-xs text-gray-400 truncate max-w-xs">{message.fichier_joint}</p>
             <a
               href={message.fichier_joint}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded"
+              className="px-3 py-1 text-sm text-white bg-blue-600 hover:bg-blue-700 rounded flex items-center gap-1"
             >
+              <Download size={14} />
               Voir / Télécharger
             </a>
+
           </div>
         </div>
       )}

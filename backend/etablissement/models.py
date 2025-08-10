@@ -598,7 +598,16 @@ class MessageUtilisateur(models.Model):
 
     def supprimer_pour_utilisateur(self):
         self.est_supprime = True
-        self.save()
+        self.save() 
+        
+    def marquer_comme_lu(self):
+        if not self.est_lu:
+            self.est_lu = True
+            self.date_lecture = timezone.now()
+            self.save()
+            return True
+        return False
+    
 
 class Annonce(models.Model):
     etablissement = models.ForeignKey('Etablissement', on_delete=models.CASCADE)
