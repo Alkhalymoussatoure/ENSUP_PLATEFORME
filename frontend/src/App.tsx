@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, useNavigate, useParams } from 'react-router-dom';
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+} from 'react-router-dom';
 
-// import HomePage from './pages/HomePage';
 import { HomeDispatcher } from './pages/home';
 import NotFoundPage from './pages/NotFoundPage';
-import MoiPage from './components/MoiPage';
 import NousPage from './components/NousPage';
 import ServicePage from './components/ServicePage';
 import PrivateRoute from './components/routes/PrivateRoute';
@@ -14,6 +16,7 @@ import QRCode2FA from './components/auth/QRcode2FA';
 import ResetPasswordForm from './components/auth/ResetPasswordForm';
 import ResetPasswordRequest from './components/auth/ResetPasswordRequest';
 import Header from './components/Header';
+import { MoiPageDispatcher } from './pages/Moi/MoiPageDispatcher';
 
 export default function App(): JSX.Element {
   const [currentService, setCurrentService] = useState<string>('');
@@ -21,7 +24,7 @@ export default function App(): JSX.Element {
   return (
     <BrowserRouter>
       <Routes>
-        {/*  Routes publiques */}
+        {/* Routes publiques */}
         <Route path="/:slug/login" element={<LoginForm />} />
         <Route path="/:slug/2fa/init" element={<QRCode2FA />} />
         <Route path="/:slug/verify-2fa" element={<Verify2FA />} />
@@ -29,7 +32,7 @@ export default function App(): JSX.Element {
         <Route path="/:slug/reset-password/request" element={<ResetPasswordRequest />} />
         <Route path="/not-found" element={<NotFoundPage />} />
 
-        {/*  Page d’accueil (privée) */}
+        {/* Page d’accueil (privée) */}
         <Route
           path="/:slug/"
           element={
@@ -44,21 +47,18 @@ export default function App(): JSX.Element {
           }
         />
 
-        {/*  Page "Moi" */}
+        {/* Page "Moi" avec dispatcher */}
         <Route
-          path="/:slug/moi"
+          path="/:role/:slug/moi"
           element={
             <PrivateRoute>
               <Header onNavigateHome={() => window.history.back()} />
-              <MoiPage
-                onPageChange={(page) => (window.location.href = `/${getSlug()}/${page}`)}
-                onServiceClick={(name) => (window.location.href = `/${getSlug()}/service/${name}`)}
-              />
+              <MoiPageDispatcher /> {/* ✅ dispatcher intelligent */}
             </PrivateRoute>
           }
         />
 
-        {/*  Page "Nous" */}
+        {/* Page "Nous" */}
         <Route
           path="/:slug/nous"
           element={
@@ -69,13 +69,13 @@ export default function App(): JSX.Element {
           }
         />
 
-        {/*  Page Service */}
+        {/* Page Service */}
         <Route
           path="/:slug/service/:nom"
           element={
             <PrivateRoute>
               <Header onNavigateHome={() => window.history.back()} />
-               <ServicePage serviceName={currentService} />{/*   */}
+              <ServicePage serviceName={currentService} />
             </PrivateRoute>
           }
         />

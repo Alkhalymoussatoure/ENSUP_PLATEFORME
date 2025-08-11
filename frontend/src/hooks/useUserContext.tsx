@@ -1,14 +1,12 @@
 import { useParams } from 'react-router-dom';
 
-
 type ParamsType = {
   slug?: string;
 };
 
+export type RoleType = 'etudiant' | 'enseignant' | 'directeur' | 'administrateur' | null;
 
-type RoleType = 'etudiant' | 'enseignant' | 'directeur' | 'administrateur' | null;
-
-type UserContextType = {
+export type UserContextType = {
   role: RoleType;
   slug: string;
   token: string | null;
@@ -19,7 +17,12 @@ type UserContextType = {
 
 export const useUserContext = (): UserContextType => {
   const { slug = '' } = useParams<ParamsType>();
-  const role = (localStorage.getItem("role") as RoleType) || null;
+
+  const rawRole = localStorage.getItem("role");
+  const role: RoleType = rawRole === 'etudiant' || rawRole === 'enseignant' || rawRole === 'directeur' || rawRole === 'administrateur'
+    ? rawRole
+    : null;
+
   const token = localStorage.getItem("token");
   const email = localStorage.getItem("email") || undefined;
   const nom = localStorage.getItem("nom") || undefined;

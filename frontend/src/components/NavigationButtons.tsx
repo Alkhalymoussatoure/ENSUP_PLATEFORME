@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { User, Users } from 'lucide-react';
+import { useUserContext } from '../hooks/useUserContext'; // adapte le chemin selon ton projet
 
 interface NavigationButtonsProps {
   onPageChange?: (page: string) => void;
@@ -7,16 +9,22 @@ interface NavigationButtonsProps {
 
 const NavigationButtons: React.FC<NavigationButtonsProps> = ({ onPageChange }) => {
   const [activeButton, setActiveButton] = useState('moi');
+  const navigate = useNavigate();
+  const { role, slug } = useUserContext();
 
   const handleButtonClick = (button: string) => {
     setActiveButton(button);
-    if (onPageChange) {
-      onPageChange(button);
+
+    if (button === 'moi' && role && slug) {
+      navigate(`/${role}/${slug}/moi`);
+    } else if (button === 'nous') {
+      onPageChange?.('nous');
     }
   };
 
   return (
     <div className="flex space-x-6 mb-8">
+      {/* Bouton Moi */}
       <button 
         onClick={() => handleButtonClick('moi')}
         className={`flex-1 relative group overflow-hidden rounded-xl transition-all duration-300 transform hover:scale-102 shadow-sm border ${
@@ -40,6 +48,7 @@ const NavigationButtons: React.FC<NavigationButtonsProps> = ({ onPageChange }) =
         </div>
       </button>
 
+      {/* Bouton Nous */}
       <button 
         onClick={() => handleButtonClick('nous')}
         className={`flex-1 relative group overflow-hidden rounded-xl transition-all duration-300 transform hover:scale-102 shadow-sm border ${

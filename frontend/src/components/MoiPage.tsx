@@ -7,14 +7,9 @@ import {
   MessageSquare, 
   UserCheck, 
   Clock, 
-  BookOpen, 
   Award, 
   Globe, 
   Briefcase,
-  Video,
-  Download,
-  AlertCircle,
-  CheckCircle,
   Settings,
   Info
 } from 'lucide-react';
@@ -536,6 +531,7 @@ const MoiPage: React.FC<MoiPageProps> = ({ onPageChange, onServiceClick }) => {
               </p>
             </div>
           </div>
+          
         </div>
       </div>
     </div>
