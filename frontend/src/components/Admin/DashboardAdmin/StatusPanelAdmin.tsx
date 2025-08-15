@@ -1,6 +1,6 @@
 import React from 'react';
 import { CreditCard, MessageSquare, FileText, TrendingUp } from 'lucide-react';
-import { useMessagesNonLus } from '../hooks/useMessagesNonLus'; 
+import { useMessagesNonLus } from '../../../hooks/useMessagesNonLus';
 
 
 interface StatusPanelProps {

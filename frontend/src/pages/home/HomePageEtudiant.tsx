@@ -1,5 +1,6 @@
 import React from 'react';
-import StatusPanel from '../../components/StatusPanel';
+
+import StatusPanel from '../../components/Etudiant/DashboardEtudiant/StatusPanelEtudiant';
 import NewsCarousel from '../../components/NewsCarousel';
 import EventsPanel from '../../components/EventsPanel';
 import HeadlinesCarousel from '../../components/HeadlinesCarousel';
@@ -15,3 +16,5 @@ export default function HomePageEtudiant({ onNavigateToMessages, onServiceClick 
     </>
   );
 }
+
+// le dashboard etudiant est déjà correcte pour le moment 

@@ -1,6 +1,6 @@
 import React from 'react';
 import { HomePageProps } from './HomePageProps';
-import StatusPanel from '../../components/StatusPanel';
+import StatusPanel from '../../components/Admin/DashboardAdmin/StatusPanelAdmin';
 import EventsPanel from '../../components/EventsPanel';
 import HeadlinesCarousel from '../../components/HeadlinesCarousel';
 
@@ -13,3 +13,5 @@ export default function HomePageAdmin({ onNavigateToMessages, onServiceClick }: 
     </>
   );
 }
+
+//je doit lui passer les composants pour cette page d'accueil admin  
