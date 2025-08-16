@@ -1,5 +1,5 @@
 import React from 'react';
-import { Reply, Trash2, ArrowLeft, Download, Paperclip  } from 'lucide-react';
+import { Reply, Trash2, ArrowLeft, Download, Paperclip } from 'lucide-react';
 
 interface Message {
   id: number;
@@ -8,7 +8,7 @@ interface Message {
   contenu: string;
   date_envoi: string;
   heure_envoi: string;
-  fichier_joint?: string | null; // ✅ seul champ nécessaire
+  fichier_joint?: string | null;
 }
 
 interface MessageViewerProps {
@@ -50,13 +50,16 @@ const MessageViewer: React.FC<MessageViewerProps> = ({
             </p>
           </div>
         </div>
+
+        {/* Boutons d'action */}
         <div className="flex items-center space-x-2">
           <button
             onClick={onReply}
-            className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg"
-            title="Répondre"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-lg transition"
+            title="Répondre au message"
           >
-            <Reply className="h-5 w-5" />
+            <Reply className="h-4 w-4" />
+            Répondre
           </button>
           <button
             onClick={() => onDelete(message.id)}
@@ -72,12 +75,12 @@ const MessageViewer: React.FC<MessageViewerProps> = ({
       <h2 className="text-xl font-bold text-gray-900 mb-2">{message.sujet}</h2>
       <p className="text-gray-700 whitespace-pre-line">{message.contenu}</p>
 
-      {/* 📎 Fichier joint enrichi */}
+      {/* Fichier joint */}
       {message.fichier_joint && (
         <div className="mt-6">
           <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Paperclip  className="w-4 h-4 text-gray-600 text-sm" />
+              <Paperclip className="w-4 h-4 text-gray-600 text-sm" />
               <p className="text-sm text-gray-600">Fichier joint disponible</p>
             </div>
             <p className="text-xs text-gray-400 truncate max-w-xs">{message.fichier_joint}</p>
@@ -90,11 +93,9 @@ const MessageViewer: React.FC<MessageViewerProps> = ({
               <Download size={14} />
               Voir / Télécharger
             </a>
-
           </div>
         </div>
       )}
-
     </div>
   );
 };

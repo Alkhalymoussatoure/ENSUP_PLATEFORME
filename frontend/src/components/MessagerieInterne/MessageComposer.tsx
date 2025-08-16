@@ -4,7 +4,7 @@ import { useUserContext } from '../../hooks/useUserContext';
 
 import {
   Send, Save, Paperclip, X,
-  User, Search, Bold, Italic, Underline,
+  User, UserRound, Bold, Italic, Underline,
   AlignLeft, AlignCenter, AlignRight,
   List, ListOrdered, Palette, Smile
 } from 'lucide-react';
@@ -98,11 +98,6 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
     if (onUpdateSubject) onUpdateSubject(value);
   };
 
-  const handleRecipientsChange = (value: string) => {
-    setLocalRecipients(value);
-    if (onUpdateRecipients) onUpdateRecipients(value);
-  };
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = e.target.files?.[0] || null;
     setFile(selectedFile);
@@ -172,12 +167,12 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
   if (messageType === 'departement') formData.append('departement_id', departementId);
 
   // 🔍 Logs utiles pour vérification
-  console.log('Token utilisé :', token);
-  console.log('Slug :', slug);
-  console.log('Mode envoi :', messageType);
-  console.log('Destinataires :', localRecipients);
-  console.log('Section ID :', sectionId);
-  console.log('Département ID :', departementId);
+  // console.log('Token utilisé :', token);
+  // console.log('Slug :', slug);
+  // console.log('Mode envoi :', messageType);
+  // console.log('Destinataires :', localRecipients);
+  // console.log('Section ID :', sectionId);
+  // console.log('Département ID :', departementId);
 
   try {
     const res = await fetch(`http://localhost:8000/api/${slug}/messages/send/`, {
@@ -208,10 +203,7 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
     } catch {
       console.warn('Réponse non JSON.');
     }
-    // finally {
-    //   setIsLoading(false);
-    // }
-    // alert(' Message envoyé avec succès');
+
     onSend();
     setIsSuccess(true);
     setLocalSubject('');
@@ -287,16 +279,15 @@ const MessageComposer: React.FC<MessageComposerProps> = ({
                 Ajouter / modifier les destinataires
               </button>
             </div>
-            <div className="flex-1 flex justify-end">
-              <div className="relative w-80">
-                <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <div className="flex-1 flex justify-end">
+                <div className="relative w-80">
+                <UserRound className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" />
                 <input
                   type="text"
-                  placeholder="Rechercher un destinataire..."
+                  placeholder="Destinataire sélectionné"
                   value={localRecipients}
-                  onChange={(e) => handleRecipientsChange(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  readOnly={messageType !== 'prive'}
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
+                  readOnly
                 />
               </div>
             </div>

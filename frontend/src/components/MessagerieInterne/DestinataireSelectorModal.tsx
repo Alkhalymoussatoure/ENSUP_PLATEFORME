@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { XCircle } from 'lucide-react';
+import { XCircle, Building2, Layers3, Users } from 'lucide-react';
 import { useUserContext } from '../../hooks/useUserContext';
 
 type Departement = { id: number; nom: string };
@@ -23,6 +23,10 @@ const DestinataireSelectorModal: React.FC<Props> = ({ isOpen, onClose, onConfirm
   const [selectedSectionIds, setSelectedSectionIds] = useState<string[]>([]);
   const [selectedMatricules, setSelectedMatricules] = useState<string[]>([]);
 
+  const [departementsDisabled, setDepartementsDisabled] = useState(false);
+  const [sectionsDisabled, setSectionsDisabled] = useState(false);
+  const [searchDisabled, setSearchDisabled] = useState(false);
+
   useEffect(() => {
     if (!isOpen) return;
     const fetchAll = async () => {
@@ -44,10 +48,9 @@ const DestinataireSelectorModal: React.FC<Props> = ({ isOpen, onClose, onConfirm
     fetchAll();
   }, [isOpen]);
 
-  // Autosuggestion pendant la saisie
   useEffect(() => {
     const timeout = setTimeout(() => {
-      if (searchTerm.trim()) {
+      if (searchTerm.trim() && !searchDisabled) {
         fetch(`http://localhost:8000/api/${slug}/users/search?q=${searchTerm}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
@@ -59,7 +62,16 @@ const DestinataireSelectorModal: React.FC<Props> = ({ isOpen, onClose, onConfirm
       }
     }, 300);
     return () => clearTimeout(timeout);
-  }, [searchTerm, slug, token]);
+  }, [searchTerm, slug, token, searchDisabled]);
+
+  // 🔄 Gestion des désactivations croisées
+  useEffect(() => {
+    const isSearching = searchTerm.trim().length > 0;
+
+    setDepartementsDisabled(selectedMatricules.length > 0 || selectedSectionIds.length > 0 || isSearching);
+    setSectionsDisabled(selectedMatricules.length > 0 || selectedDepartementIds.length > 0 || isSearching);
+    setSearchDisabled(selectedDepartementIds.length > 0 || selectedSectionIds.length > 0);
+  }, [selectedDepartementIds, selectedSectionIds, selectedMatricules, searchTerm]);
 
   const toggleSelection = (id: string, current: string[], setter: (val: string[]) => void) => {
     setter(current.includes(id) ? current.filter(i => i !== id) : [...current, id]);
@@ -102,22 +114,28 @@ const DestinataireSelectorModal: React.FC<Props> = ({ isOpen, onClose, onConfirm
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Rechercher par nom ou matricule..."
-            className="w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            disabled={searchDisabled}
+            className={`w-full px-3 py-2 border rounded focus:outline-none focus:ring-2 ${
+              searchDisabled ? 'bg-gray-100 text-gray-400' : 'focus:ring-blue-500'
+            }`}
           />
-          {/* Suggestions auto */}
           {searchTerm.trim() && users.length > 0 && (
             <div className="mt-2 bg-white border rounded shadow-sm max-h-60 overflow-auto z-10">
-              {users.map((u) => (
-                <div
-                  key={u.matricule}
-                  onClick={() => toggleMatricule(u.matricule)}
-                  className={`px-4 py-2 cursor-pointer hover:bg-blue-50 ${
-                    selectedMatricules.includes(u.matricule) ? 'font-semibold text-blue-700' : ''
-                  }`}
-                >
-                  {u.nom} ({u.matricule}) · {u.role}
-                </div>
-              ))}
+              {users.map((u) => {
+                const isSelected = selectedMatricules.includes(u.matricule);
+                return (
+                  <div
+                    key={u.matricule}
+                    onClick={() => toggleMatricule(u.matricule)}
+                    className={`px-4 py-2 cursor-pointer hover:bg-blue-50 ${
+                      isSelected ? 'font-semibold text-blue-700 bg-blue-100' : ''
+                    }`}
+                  >
+                    {u.nom} ({u.matricule}) · {u.role}
+                    {isSelected && <span className="ml-2 text-xs text-red-500">(cliquez pour retirer)</span>}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -131,12 +149,13 @@ const DestinataireSelectorModal: React.FC<Props> = ({ isOpen, onClose, onConfirm
                 <label key={dep.id} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
+                    disabled={departementsDisabled}
                     checked={selectedDepartementIds.includes(dep.id.toString())}
                     onChange={() =>
                       toggleSelection(dep.id.toString(), selectedDepartementIds, setSelectedDepartementIds)
                     }
                   />
-                  <span className="text-gray-800">{dep.nom}</span>
+                  <span className={departementsDisabled ? 'text-gray-400' : 'text-gray-800'}>{dep.nom}</span>
                 </label>
               ))}
             </div>
@@ -148,12 +167,15 @@ const DestinataireSelectorModal: React.FC<Props> = ({ isOpen, onClose, onConfirm
                 <label key={sec.id} className="flex items-center space-x-2">
                   <input
                     type="checkbox"
+                    disabled={sectionsDisabled}
                     checked={selectedSectionIds.includes(sec.id.toString())}
                     onChange={() =>
                       toggleSelection(sec.id.toString(), selectedSectionIds, setSelectedSectionIds)
                     }
                   />
-                  <span className="text-gray-800">Section {sec.numero_section}</span>
+                  <span className={sectionsDisabled ? 'text-gray-400' : 'text-gray-800'}>
+                    Section {sec.numero_section}
+                  </span>
                 </label>
               ))}
             </div>
@@ -161,47 +183,65 @@ const DestinataireSelectorModal: React.FC<Props> = ({ isOpen, onClose, onConfirm
         </div>
 
         {/* ✅ Résumé des sélections */}
-        <div className="mb-6 text-sm text-gray-700 space-y-2">
+        <div className="mb-6 text-sm text-gray-700 space-y-4">
           {selectedDepartementIds.length > 0 && (
-            <div>
-              ✅ Départements sélectionnés :
-              <ul className="list-disc ml-5">
-                {selectedDepartementIds.map((id) => {
-                  const dep = departements.find((d) => d.id.toString() === id);
-                  return <li key={id}>{dep?.nom || 'Département'} (ID {id})</li>;
-                })}
-              </ul>
+            <div className="flex items-center space-x-2">
+              <Building2 className="w-4 h-4 text-blue-600" />
+              <div>
+                <strong>Départements sélectionnés :</strong>
+                <ul className="list-disc ml-5">
+                  {selectedDepartementIds.map((id) => {
+                    const dep = departements.find((d) => d.id.toString() === id);
+                    return <li key={id}>{dep?.nom || 'Département'} (ID {id})</li>;
+                  })}
+                </ul>
+              </div>
             </div>
           )}
+
           {selectedSectionIds.length > 0 && (
-            <div>
-              ✅ Sections sélectionnées :
-              <ul className="list-disc ml-5">
-                {selectedSectionIds.map((id) => {
-                  const sec = sections.find((s) => s.id.toString() === id);
-                  return <li key={id}>Section {sec?.numero_section || '???'} (ID {id})</li>;
-                })}
-              </ul>
+            <div className="flex items-center space-x-2">
+              <Layers3 className="w-4 h-4 text-green-600" />
+              <div>
+                <strong>Sections sélectionnées :</strong>
+                <ul className="list-disc ml-5">
+                  {selectedSectionIds.map((id) => {
+                    const sec = sections.find((s) => s.id.toString() === id);
+                    return <li key={id}>Section {sec?.numero_section || id}</li>;
+                  })}
+                </ul>
+              </div>
             </div>
           )}
+
           {selectedMatricules.length > 0 && (
-            <div>
-              ✅ Utilisateurs sélectionnés :
-              <ul className="list-disc ml-5">
-                {selectedMatricules.map((mat) => {
-                  const u = users.find((u) => u.matricule === mat);
-                  return <li key={mat}>{u?.nom || 'Utilisateur'} ({mat})</li>;
-                })}
-              </ul>
+            <div className="flex items-center space-x-2">
+              <Users className="w-4 h-4 text-purple-600" />
+              <div>
+                <strong>Utilisateurs sélectionnés :</strong>
+                <ul className="list-disc ml-5">
+                  {selectedMatricules.map((mat) => {
+                    const user = users.find((u) => u.matricule === mat);
+                    return <li key={mat}>{user?.nom || mat} ({mat})</li>;
+                  })}
+                </ul>
+              </div>
             </div>
           )}
         </div>
 
+        {/* ✅ Boutons */}
         <div className="flex justify-end space-x-4">
-          <button onClick={onClose} className="px-5 py-2 bg-gray-100 text-gray-700 rounded hover:bg-gray-200">
+          <button
+            onClick={onClose}
+            className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+          >
             Annuler
           </button>
-          <button onClick={handleConfirm} className="px-5 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+          <button
+            onClick={handleConfirm}
+            className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          >
             Confirmer
           </button>
         </div>

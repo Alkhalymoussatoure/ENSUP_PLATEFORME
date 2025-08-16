@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
-  Inbox,
-  Star,
-  Paperclip,
-  Calendar,
-  Reply,
-  Trash2,
-  ChevronLeft,
+  Inbox,Star, Paperclip, Calendar, Reply, Trash2, ChevronLeft,
   ChevronRight,
+  
 } from 'lucide-react';
 import { useUserContext } from '../../hooks/useUserContext';
-import MessageViewer from './MessageViewer';
+import MessageViewer from './MessageViewer'; 
+import { useNavigate } from 'react-router-dom';
+
 
 interface Message {
   id: number;
@@ -18,6 +15,7 @@ interface Message {
   sujet: string;
   contenu: string;
   est_lu: boolean;
+  matricule_expediteur: string;
   est_favori?: boolean;
   fichier_joint?: string | null;
   type_message: string;
@@ -45,6 +43,7 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille, setUnreadCo
   const totalPages = Math.max(1, Math.ceil(messages.length / messagesPerPage));
   const selectedMessage = messages.find((m) => m.id === selectedMessageId) || null;
   
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (!slug || !token) return;
@@ -61,6 +60,7 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille, setUnreadCo
         const allMessages: Message[] = (data.messages || []).map((msg: {
           id: number;
           expediteur: string;
+          matricule_expediteur: string;
           sujet: string;
           contenu: string;
           lu: boolean;
@@ -72,6 +72,7 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille, setUnreadCo
         }) => ({
           id: msg.id,
           expediteur: msg.expediteur,
+          matricule_expediteur: msg.matricule_expediteur,
           sujet: msg.sujet,
           contenu: msg.contenu,
           est_lu: msg.lu,
@@ -100,9 +101,19 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille, setUnreadCo
   }, [slug, token]);
 
 
-  const handleReply = () => {
-    console.log("Répondre au message");
+  const handleReply = (message: Message) => {
+    navigate(`/${slug}/moi/compose`, {
+      state: {
+        destinataires: [message.matricule_expediteur],
+        sujet: `Rep: ${message.sujet}`,
+        message_parent: message.id,
+        type_message: 'prive',
+        citation: `« ${message.expediteur} » a écrit :\n\n${message.contenu}`
+
+      }
+    });
   };
+
 
   const handleTrash = async (id: number) => {
     console.log("Envoi déplacement corbeille pour ID :", id);
@@ -231,7 +242,7 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille, setUnreadCo
     return (
       <MessageViewer
         message={selectedMessage}
-        onReply={handleReply}
+        onReply={() => handleReply(selectedMessage!)}
         onDelete={handleTrash}
         onBack={() => setSelectedMessageId(null)}
       />
@@ -290,7 +301,7 @@ const MessageList: React.FC<MessageListProps> = ({ refreshCorbeille, setUnreadCo
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleReply();
+                            handleReply(msg);
                           }}
                           className="p-2 text-blue-600 hover:bg-blue-100 rounded-lg"
                           title="Répondre"

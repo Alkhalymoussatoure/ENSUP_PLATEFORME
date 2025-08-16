@@ -63,7 +63,7 @@ def envoyer_message_unifie(request, slug):
         ]
 
     else:
-        return Response({'error': 'Mode d’envoi invalide.'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': "Mode d'envoi invalide."}, status=status.HTTP_400_BAD_REQUEST)
 
     if not sujet or not type_message or not destinataires:
         return Response({'error': 'Sujet, type_message et destinataires requis.'}, status=status.HTTP_400_BAD_REQUEST)
@@ -119,6 +119,7 @@ def message_boite_reception(request, slug):
             'id': rel.message.id,
             'sujet': rel.message.sujet,
             'expediteur': rel.message.expediteur.nom_complet,
+            'matricule_expediteur': rel.message.expediteur.matricule,
             'date_envoi': rel.message.date_envoi,
             'lu': rel.est_lu,
             'favori': rel.est_favori,

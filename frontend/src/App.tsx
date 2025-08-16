@@ -15,7 +15,8 @@ import Verify2FA from './components/auth/Verify2FA';
 import QRCode2FA from './components/auth/QRcode2FA';
 import ResetPasswordForm from './components/auth/ResetPasswordForm';
 import ResetPasswordRequest from './components/auth/ResetPasswordRequest';
-import Header from './components/Header';
+import Header from './components/Header'; 
+import MessageComposerPage from './pages/MessageComposerPage';
 import { MoiPageDispatcher } from './pages/Moi/MoiPageDispatcher';
 
 export default function App(): JSX.Element {
@@ -29,7 +30,8 @@ export default function App(): JSX.Element {
         <Route path="/:slug/2fa/init" element={<QRCode2FA />} />
         <Route path="/:slug/verify-2fa" element={<Verify2FA />} />
         <Route path="/:slug/reset-password/:token" element={<ResetPasswordForm />} />
-        <Route path="/:slug/reset-password/request" element={<ResetPasswordRequest />} />
+        <Route path="/:slug/reset-password/request" element={<ResetPasswordRequest />} />    
+
         <Route path="/not-found" element={<NotFoundPage />} />
 
         {/* Page d’accueil (privée) */}
@@ -46,6 +48,17 @@ export default function App(): JSX.Element {
             </PrivateRoute>
           }
         />
+        {/* message route  */}
+        <Route
+          path="/:slug/moi/compose"
+          element={
+            <PrivateRoute>
+              <Header onNavigateHome={() => window.history.back()} />
+              <MessageComposerPage />
+            </PrivateRoute>
+          }
+        />
+
 
         {/* Page "Moi" avec dispatcher */}
         <Route
