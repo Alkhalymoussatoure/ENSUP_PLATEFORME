@@ -4,13 +4,24 @@ import ColonneGaucheEt from './ColonneGaucheEt';
 import ColonneCentraleEt from './ColonneCentraleEt';
 import ColonneDroiteEt from './ColonneDroiteEt';
 
+import Calendrier from './serviceClasse/Calendrier';
+import Document_pedagogiques from './serviceClasse/Document_pedagogiques';
+import Forum_etudiant from './serviceClasse/Forum_etudiant';
+import Information_enseignant from './serviceClasse/Information_enseignant';
+import NoteEvaluation from './serviceClasse/NoteEvaluation';
+import Presence_absences from './serviceClasse/Presence_absences';
+import Site_web_recommender from './serviceClasse/Site_web_recommender';
+import Travaux_a_remettre from './serviceClasse/Travaux_a_remettre';
+import CalendrierPersonnel from './serviceClasse/CalendrierPersonnel';
+import ForumEquipe from './serviceClasse/ForumEquipe';
+
 interface MoiPageProps {
   onPageChange?: (page: string) => void;
-  onServiceClick?: (serviceName: string) => void;
 }
 
-const MoiPageEtudiant: React.FC<MoiPageProps> = ({ onPageChange, onServiceClick }) => {
+const MoiPageEtudiant: React.FC<MoiPageProps> = ({ onPageChange }) => {
   const [activeTab, setActiveTab] = useState('moi');
+  const [activeService, setActiveService] = useState<string | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<number | null>(null);
 
@@ -19,6 +30,10 @@ const MoiPageEtudiant: React.FC<MoiPageProps> = ({ onPageChange, onServiceClick 
     if (tab === 'nous' && onPageChange) {
       onPageChange('nous');
     }
+  };
+
+  const handleServiceClick = (serviceName: string) => {
+    setActiveService(serviceName);
   };
 
   const navigateMonth = (direction: 'prev' | 'next') => {
@@ -68,6 +83,43 @@ const MoiPageEtudiant: React.FC<MoiPageProps> = ({ onPageChange, onServiceClick 
     return days;
   };
 
+  const renderService = () => {
+    const serviceComponent = (() => {
+      switch (activeService) {
+        case 'calendrier': return <Calendrier />;
+        case 'documents-cours': return <Document_pedagogiques />;
+        case 'forum-classe': return <Forum_etudiant />;
+        case 'infos-enseignant': return <Information_enseignant />;
+        case 'notes-evaluation': return <NoteEvaluation />;
+        case 'liste-absences': return <Presence_absences />;
+        case 'sites-recommandes': return <Site_web_recommender />;
+        case 'travaux': return <Travaux_a_remettre />;
+        case 'forum-equipe': return <ForumEquipe />;
+        case 'calendrier-personnel': return <CalendrierPersonnel />;
+        default: return <ColonneCentraleEt />;
+      }
+    })();
+
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-9 gap-8">
+        <div className="lg:col-span-6">
+          {serviceComponent}
+        </div>
+        <div className="lg:col-span-3">
+          <ColonneDroiteEt
+            currentDate={currentDate}
+            selectedDate={selectedDate}
+            setSelectedDate={setSelectedDate}
+            navigateMonth={navigateMonth}
+            monthNames={monthNames}
+            dayNames={dayNames}
+            getDaysInMonth={getDaysInMonth}
+          />
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Bandeau paysage */}
@@ -87,19 +139,12 @@ const MoiPageEtudiant: React.FC<MoiPageProps> = ({ onPageChange, onServiceClick 
           <ColonneGaucheEt
             activeTab={activeTab}
             handleTabChange={handleTabChange}
-            onServiceClick={onServiceClick}
+            onServiceClick={handleServiceClick}
             onPageChange={onPageChange}
           />
-          <ColonneCentraleEt />
-          <ColonneDroiteEt
-            currentDate={currentDate}
-            selectedDate={selectedDate}
-            setSelectedDate={setSelectedDate}
-            navigateMonth={navigateMonth}
-            monthNames={monthNames}
-            dayNames={dayNames}
-            getDaysInMonth={getDaysInMonth}
-          />
+          <div className="lg:col-span-9">
+            {renderService()}
+          </div>
         </div>
       </div>
     </div>

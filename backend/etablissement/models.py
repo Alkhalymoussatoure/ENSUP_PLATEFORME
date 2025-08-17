@@ -758,6 +758,7 @@ class Document(models.Model):
     date_telechargement = models.DateTimeField(auto_now_add=True)
     est_public = models.BooleanField(default=False)
     description = models.TextField(blank=True)
+    type_fichier = models.CharField(max_length=20, blank=True) 
     
 
     def __str__(self):

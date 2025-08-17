@@ -5,16 +5,16 @@ import {
 
 interface Course {
   id: number;
-  name: string;
+  nom: string;
   code: string;
-  professor: string;
-  color: string;
+  enseignant: string;
+  coleur: string;
   documents: { total: number; new: number };
-  assignments: { total: number; pending: number };
-  grade: string;
-  finalGrade: string;
-  classMedian: string;
-  classAverage: string;
+  travaux: { total: number; pending: number };
+  note: string;
+  noteFinale: string;
+  medianeClasse: string;
+  moyenneClasse: string;
   absences: string;
   forumActive: boolean;
 }
@@ -22,46 +22,46 @@ interface Course {
 const courses: Course[] = [
   {
     id: 1,
-    name: "Mathématiques Avancées",
+    nom: "Mathématiques Avancées",
     code: "MATH-301",
-    professor: "Dr. Camara",
-    color: "bg-orange-500",
+    enseignant: "Dr. Camara",
+    coleur: "bg-orange-500",
     documents: { total: 12, new: 3 },
-    assignments: { total: 5, pending: 2 },
-    grade: "16/20",
-    finalGrade: "15/20",
-    classMedian: "14/20",
-    classAverage: "13.5/20",
+    travaux: { total: 5, pending: 2 },
+    note: "16/20",
+    noteFinale: "15/20",
+    medianeClasse: "14/20",
+    moyenneClasse: "13.5/20",
     absences: "2h",
     forumActive: true
   },
   {
     id: 2,
-    name: "Informatique Théorique",
+    nom: "Informatique Théorique",
     code: "INFO-205",
-    professor: "Prof. Diallo",
-    color: "bg-green-500",
+    enseignant: "Prof. Diallo",
+    coleur: "bg-green-500",
     documents: { total: 8, new: 1 },
-    assignments: { total: 3, pending: 0 },
-    grade: "18/20",
-    finalGrade: "17/20",
-    classMedian: "15/20",
-    classAverage: "14.8/20",
+    travaux: { total: 3, pending: 0 },
+    note: "18/20",
+    noteFinale: "17/20",
+    medianeClasse: "15/20",
+    moyenneClasse: "14.8/20",
     absences: "0h",
     forumActive: false
   },
   {
     id: 3,
-    name: "Physique Quantique",
+    nom: "Physique Quantique",
     code: "PHYS-401",
-    professor: "Dr. Bah",
-    color: "bg-purple-500",
+    enseignant: "Dr. Bah",
+    coleur: "bg-purple-500",
     documents: { total: 15, new: 5 },
-    assignments: { total: 4, pending: 1 },
-    grade: "14/20",
-    finalGrade: "14/20",
-    classMedian: "13/20",
-    classAverage: "12.9/20",
+    travaux: { total: 4, pending: 1 },
+    note: "14/20",
+    noteFinale: "14/20",
+    medianeClasse: "13/20",
+    moyenneClasse: "12.9/20",
     absences: "4h",
     forumActive: true
   }
@@ -76,11 +76,11 @@ const ColonneCentraleEt: React.FC = () => {
           {courses.map((course) => (
             <div key={course.id} className="border border-gray-200 rounded-lg p-6">
               <div className="flex items-center space-x-4 mb-4">
-                <div className={`w-4 h-4 rounded-full ${course.color}`}></div>
+                <div className={`w-4 h-4 rounded-full ${course.coleur}`}></div>
                 <div>
                   <h4 className="font-semibold text-gray-900">{course.code}</h4>
-                  <p className="text-sm text-gray-600">{course.name}</p>
-                  <p className="text-xs text-gray-500">{course.professor}</p>
+                  <p className="text-sm text-gray-600">{course.nom}</p>
+                  <p className="text-xs text-gray-500">{course.enseignant}</p>
                 </div>
               </div>
 
@@ -110,7 +110,7 @@ const ColonneCentraleEt: React.FC = () => {
                     <span className="text-sm">Travaux</span>
                   </div>
                   <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-                    {course.assignments.total} énoncés distribués
+                    {course.travaux.total} énoncés distribués
                   </span>
                 </div>
               </div>
@@ -122,10 +122,10 @@ const ColonneCentraleEt: React.FC = () => {
                   <span className="text-sm">Notes d'évaluations</span>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-xs">
-                  <div><span className="text-gray-600">Votre note actuelle: </span><span className="font-semibold">{course.grade}</span></div>
-                  <div><span className="text-gray-600">Note finale transmise: </span><span className="font-semibold">{course.finalGrade}</span></div>
-                  <div><span className="text-gray-600">Médiane de la classe: </span><span className="font-semibold">{course.classMedian}</span></div>
-                  <div><span className="text-gray-600">Moyenne de la classe: </span><span className="font-semibold">{course.classAverage}</span></div>
+                  <div><span className="text-gray-600">Votre note actuelle: </span><span className="font-semibold">{course.note}</span></div>
+                  <div><span className="text-gray-600">Note finale transmise: </span><span className="font-semibold">{course.noteFinale}</span></div>
+                  <div><span className="text-gray-600">Médiane de la classe: </span><span className="font-semibold">{course.medianeClasse}</span></div>
+                  <div><span className="text-gray-600">Moyenne de la classe: </span><span className="font-semibold">{course.moyenneClasse}</span></div>
                 </div>
               </div>
 
