@@ -1,9 +1,11 @@
 import React from 'react';
-import { Send,Paperclip } from 'lucide-react';
+import { Send, Paperclip } from 'lucide-react';
 import { useMessagesEnvoyes } from '../../hooks/useMessagesEnvoyes';
 
 const SectionEnvoyes: React.FC = () => {
   const { sentMessages, loading, error } = useMessagesEnvoyes();
+  const [currentPage, setCurrentPage] = React.useState(1);
+  const messagesParPage = 6;
 
   if (loading) {
     return <div className="p-6 text-gray-500">Chargement des messages envoyés…</div>;
@@ -23,9 +25,15 @@ const SectionEnvoyes: React.FC = () => {
     );
   }
 
+  const totalPages = Math.ceil(sentMessages.length / messagesParPage);
+  const indexOfLastMessage = currentPage * messagesParPage;
+  const indexOfFirstMessage = indexOfLastMessage - messagesParPage;
+  const messagesCourants = sentMessages.slice(indexOfFirstMessage, indexOfLastMessage);
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
+
   return (
     <div className="divide-y divide-gray-200">
-      {sentMessages.map((msg) => (
+      {messagesCourants.map((msg) => (
         <div key={msg.id} className="p-6 bg-white hover:bg-gray-50 transition">
           <p className="font-semibold text-gray-900">{msg.sujet}</p>
           <p className="text-sm text-gray-600">
@@ -37,9 +45,50 @@ const SectionEnvoyes: React.FC = () => {
               Pièce jointe : {msg.piece_jointe}
             </p>
           )}
-
         </div>
       ))}
+
+      {/* Pagination moderne */}
+      <div className="flex justify-center items-center gap-2 px-6 py-4">
+        {/* Flèche gauche */}
+        <button
+          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+          disabled={currentPage === 1}
+          className="p-2 rounded-full hover:bg-gray-200 disabled:opacity-50"
+        >
+          <span className="sr-only">Page précédente</span>
+          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
+        {/* Numéros de page */}
+        {pages.map((page) => (
+          <button
+            key={page}
+            onClick={() => setCurrentPage(page)}
+            className={`px-3 py-1 rounded text-sm transition ${
+              page === currentPage
+                ? 'bg-blue-600 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            {page}
+          </button>
+        ))}
+
+        {/* Flèche droite */}
+        <button
+          onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+          disabled={currentPage === totalPages}
+          className="p-2 rounded-full hover:bg-gray-200 disabled:opacity-50"
+        >
+          <span className="sr-only">Page suivante</span>
+          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+        </button>
+      </div>
     </div>
   );
 };

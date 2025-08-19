@@ -115,7 +115,7 @@ from .views.views_local import (
 from .views.views_document import (
     # Document
     get_all_documents_by_etablissement, get_document_by_id, create_document,
-    update_document_by_id, delete_document_by_id
+    update_document_by_id, delete_document_by_id, get_documents_par_section_etudiant, documents_par_section_details
 )
 
 from .views.views_evenementCalendrier import (
@@ -268,6 +268,10 @@ urlpatterns = [
     path('<slug:slug>/locaux/<int:local_id>/delete/', delete_local_by_id, name='delete-local'),
 
     # Documents
+    path('<slug:slug>/etudiant/documents-par-section/', get_documents_par_section_etudiant, name='get_documents_par_section_etudiant'),
+    path('<slug:slug>/etudiant/documents-par-section-details/', documents_par_section_details, name='documents_par_section_details'),
+
+    # non utiliser
     path('<slug:slug>/documents/', get_all_documents_by_etablissement, name='liste-documents'),
     path('<slug:slug>/documents/add/', create_document, name='add-document'),
     path('<slug:slug>/documents/<int:document_id>/', get_document_by_id, name='get-document'),
